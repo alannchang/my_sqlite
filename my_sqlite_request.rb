@@ -64,12 +64,13 @@ class MySqliteRequest
     def run
 
         @full_table.each do |row|
-            if @where_header && @where_value
+
+            if @where_header && @where_value # if WHERE criteria specified
                 if row[@where_header] == @where_value
-                    puts @select_headers.map { |header| row[header] }.join("|") # print out each row
+                    puts row.to_h.slice(*@select_headers)
                 end
-            else
-                puts @select_headers.map { |header| row[header] }.join("|") # print out each row
+            else # otherwise, print selected headers only
+                puts row.to_h.slice(*@select_headers)
             end
         end
     end
@@ -79,8 +80,5 @@ end
 
 # TEST HERE
 
-request = MySqliteRequest.new
-request = request.from("small_test.csv")
-request = request.select("*")
-request = request.where("Gender", "Male")
-request = request.run
+# MySqliteRequest.new.from('small_test.csv').select('*').run
+MySqliteRequest.new.from('small_test.csv').select('Email').where('FirstName', 'Derick').run
