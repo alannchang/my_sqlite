@@ -6,8 +6,8 @@ class MySqliteRequest
 
         @select_headers = Array.new # headers that will be used in request
         @select_rows = nil
-        @where_column = nil
-        @where_criteria = nil
+        @where_header = nil
+        @where_value = nil
     
     end
 
@@ -63,8 +63,12 @@ class MySqliteRequest
 
     def run
 
-        @full_table.drop(1).each do |row| # for each row, excluding the row containing the headers
-            if row[@where_header] == @where_value
+        @full_table.each do |row|
+            if @where_header && @where_value
+                if row[@where_header] == @where_value
+                    puts @select_headers.map { |header| row[header] }.join("|") # print out each row
+                end
+            else
                 puts @select_headers.map { |header| row[header] }.join("|") # print out each row
             end
         end
@@ -78,5 +82,5 @@ end
 request = MySqliteRequest.new
 request = request.from("small_test.csv")
 request = request.select("*")
-request = request.where("Gender", "Female")
+request = request.where("Gender", "Male")
 request = request.run
