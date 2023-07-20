@@ -3,18 +3,25 @@ require 'csv'
 class MySqliteRequest
     
     def initialize
+
+        @select_headers = Array.new # headers that will be used in request
+        @select_rows = nil
+        @where_column = nil
+        @where_criteria = nil
+    
     end
 
     def from(csv_name)
-        @csv_name = csv_name
-        @full_table = CSV.parse(File.read(csv_name), headers: true)
-        @full_headers = @full_table.headers
-        @select_headers = Array.new
+
+        @csv_name = csv_name # csv file name
+        @full_table = CSV.parse(File.read(csv_name), headers: true) # complete table as a CSV::Table object
+        @full_headers = @full_table.headers # complete list of headers as an array of strings
         return self
+
     end
 
     def select(column_name)
-
+        # use select_headers to store the specified columns
         if column_name == "*"
             @select_headers = @full_headers
             return self
@@ -25,18 +32,12 @@ class MySqliteRequest
         end
 
     end
-    # OR
-    # def select(column_name_a, column_name_b)
-    # end
-
-    def run
-        # puts @headers.join('|')
-        @full_table.drop(1).each do |row|
-            puts @select_headers.map { |header| row[header] }.join('|')
-        end
-    end
 
     def where(column_name, criteria)
+
+        @where_header = column_name
+        @where_value = criteria
+        return self
     end
 
     def join(column_on_db_a, filename_db_b, column_on_db_b)
@@ -60,7 +61,14 @@ class MySqliteRequest
     def delete
     end
 
+    def run
 
+        @full_table.drop(1).each do |row| # for each row, excluding the row containing the headers
+            if row[@where_header] == @where_value
+                puts @select_headers.map { |header| row[header] }.join("|") # print out each row
+            end
+        end
+    end
 
 end
 
@@ -69,5 +77,6 @@ end
 
 request = MySqliteRequest.new
 request = request.from("small_test.csv")
-request = request.select("FirstName")
+request = request.select("*")
+request = request.where("Gender", "Female")
 request = request.run
