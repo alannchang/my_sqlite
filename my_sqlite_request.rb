@@ -3,33 +3,38 @@ require 'csv'
 class MySqliteRequest
     
     def initialize
-        @csv_name = ""
-        @table = nil
-        @headers = nil 
     end
 
-    def run
-        puts @headers.join('|')
-        @csv_table.drop(1).each do |row|
-            puts @headers.map { |header| row[header] }.join('|')
-        end
-    end
-        
     def from(csv_name)
         @csv_name = csv_name
-        @csv_table = CSV.parse(File.read(csv_name), headers: true)
-        @headers = @csv_table.headers
+        @full_table = CSV.parse(File.read(csv_name), headers: true)
+        @full_headers = @full_table.headers
+        @select_headers = Array.new
         return self
     end
 
     def select(column_name)
+
         if column_name == "*"
-            return self  
-        end  
+            @select_headers = @full_headers
+            return self
+
+        elsif @full_headers.include?(column_name)
+            @select_headers << column_name
+            return self
+        end
+
     end
     # OR
     # def select(column_name_a, column_name_b)
     # end
+
+    def run
+        # puts @headers.join('|')
+        @full_table.drop(1).each do |row|
+            puts @select_headers.map { |header| row[header] }.join('|')
+        end
+    end
 
     def where(column_name, criteria)
     end
@@ -62,17 +67,7 @@ end
 
 # TEST HERE
 
-# csv_name = "small_test.csv"
-
-# csv_table = CSV.parse(File.read(csv_name), headers: true)
-# headers = csv_table.headers
-
-# puts headers.join('|')
-# csv_table.drop(1).each do |row|
-#   puts headers.map { |header| row[header] }.join('|')
-# end
-
 request = MySqliteRequest.new
 request = request.from("small_test.csv")
-request = request.select("*")
+request = request.select("FirstName")
 request = request.run
