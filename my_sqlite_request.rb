@@ -4,10 +4,12 @@ class MySqliteRequest
     
     def initialize
 
-        @select_headers = Array.new # headers that will be used in request
+        @select_headers = []
         @select_rows = nil
+
         @where_header = nil
         @where_value = nil
+        
         @ascending = nil
         @descending = nil
     
@@ -15,24 +17,23 @@ class MySqliteRequest
 
     def from(csv_name)
 
-        @csv_name = csv_name # csv file name
-        @full_table = CSV.parse(File.read(csv_name), headers: true) # complete table as a CSV::Table object
-        @full_headers = @full_table.headers # complete list of headers as an array of strings
+        @csv_name = csv_name
+        @full_table = CSV.parse(File.read(csv_name), headers: true)
+        @full_headers = @full_table.headers
         return self
 
     end
 
-    def select(column_name)
-        # use select_headers to store the specified columns
-        if column_name == "*"
-            @select_headers = @full_headers
-            return self
+    def select(*args)
+        args.each do |column_name|
+            if column_name == "*"
+                @select_headers = @full_headers
 
-        elsif @full_headers.include?(column_name)
-            @select_headers << column_name
-            return self
+            elsif @full_headers.include?(column_name)
+                @select_headers << column_name
+            end
         end
-
+        return self
     end
 
     def where(column_name, criteria)
@@ -85,9 +86,11 @@ class MySqliteRequest
             if @where_header && @where_value # if WHERE criteria specified
                 if row[@where_header] == @where_value
                     puts row.to_h.slice(*@select_headers)
+                    
                 end
             else # otherwise, print selected headers only
                 puts row.to_h.slice(*@select_headers)
+                
             end
 
         end
@@ -99,4 +102,4 @@ end
 # TEST HERE
 
 # MySqliteRequest.new.from('small_test.csv').select('*').run
-# MySqliteRequest.new.from('small_test.csv').select('Email').where('FirstName', 'Derick').run
+MySqliteRequest.new.from('small_test.csv').select('Gender', 'Email', 'UserName').run
