@@ -12,6 +12,8 @@ class MySqliteRequest
         
         @ascending = nil
         @descending = nil
+
+        @insert_table = nil
     
     end
 
@@ -47,7 +49,7 @@ class MySqliteRequest
         @csv_name2 = filename_db_b
         @join_header1 = column_on_db_a
         @join_header2 = column_on_db_b
-        
+        return self
     end
 
     def order(order, column_name)
@@ -59,27 +61,40 @@ class MySqliteRequest
             @descending = true
         end
 
-
+        return self
     end
 
     def insert(table_name)
-        @insert_table = table_name
+        @insert_csv = table_name
+        @full_table = CSV.parse(File.read(table_name), headers: true)
+        @full_headers = @full_table.headers
+        return self
     end
 
-    def values(data)
-        @insert_table
+    def values(*data)
+        @new_row = CSV::Row.new(@full_headers, data)
+        return self
     end
 
     def update(table_name)
+        return self
     end
 
     def set(data)
+        return self
     end
 
     def delete
+
+        return self
     end
 
     def run
+
+        if @insert_csv
+            @full_table << @new_row
+            return self
+        end
 
         @full_table.each do |row|
 
@@ -102,4 +117,5 @@ end
 # TEST HERE
 
 # MySqliteRequest.new.from('small_test.csv').select('*').run
-MySqliteRequest.new.from('small_test.csv').select('Gender', 'Email', 'UserName').run
+# MySqliteRequest.new.from('small_test.csv').select('Gender', 'Email', 'UserName').where('FirstName', 'Carl').run
+MySqliteRequest.new.insert('small_test.csv').values("Male","Bob","Dylan","bob","rollingstone@hotmail.com","90","Somewhere","Apple iPhone","1","2020-03-05 15:19:48").run
