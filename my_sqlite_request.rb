@@ -8,6 +8,8 @@ class MySqliteRequest
         @select_rows = nil
         @where_header = nil
         @where_value = nil
+        @ascending = nil
+        @descending = nil
     
     end
 
@@ -41,15 +43,30 @@ class MySqliteRequest
     end
 
     def join(column_on_db_a, filename_db_b, column_on_db_b)
+        @csv_name2 = filename_db_b
+        @join_header1 = column_on_db_a
+        @join_header2 = column_on_db_b
+        
     end
 
     def order(order, column_name)
+        @order_header = column_name
+
+        if order == "asc"
+            @ascending = true
+        elsif order == "desc"
+            @descending = true
+        end
+
+
     end
 
     def insert(table_name)
+        @insert_table = table_name
     end
 
     def values(data)
+        @insert_table
     end
 
     def update(table_name)
@@ -72,6 +89,7 @@ class MySqliteRequest
             else # otherwise, print selected headers only
                 puts row.to_h.slice(*@select_headers)
             end
+
         end
     end
 
@@ -81,4 +99,4 @@ end
 # TEST HERE
 
 # MySqliteRequest.new.from('small_test.csv').select('*').run
-MySqliteRequest.new.from('small_test.csv').select('Email').where('FirstName', 'Derick').run
+# MySqliteRequest.new.from('small_test.csv').select('Email').where('FirstName', 'Derick').run
