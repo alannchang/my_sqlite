@@ -74,10 +74,14 @@ class MySqliteRequest
     end
 
     def update(table_name)
+        @update_csv = table_name
+        @full_table = CSV.parse(File.read(table_name), headers: true)
+        @full_headers = @full_table.headers
         return self
     end
 
     def set(data)
+        @hash_data = data
         return self
     end
 
@@ -107,6 +111,23 @@ class MySqliteRequest
             return self
         end
 
+        if @update_rows
+            @full_table.each do |row|
+                if @where_header && @where_value
+                    @hash_data.each do |key, value|
+                        row[key] = value
+                    end
+                else
+                    @hash_data.each do |key, value|
+                        row[key] = value
+                    end
+                end
+                @update_rows = nil
+            return self
+            end
+        end
+
+
         @full_table.each do |row|
 
             if @where_header && @where_value # if WHERE criteria specified
@@ -131,12 +152,19 @@ end
 
 # MySqliteRequest.new.from('small_test.csv').select('Gender', 'Email', 'UserName').where('FirstName', 'Carl').run
 
+# req = MySqliteRequest.new
+# req = req.insert('small_test.csv').values("Male","Bob","Dylan","bob","rollingstone@hotmail.com","90","Somewhere","Apple iPhone","1","2020-03-05 15:19:48")
+# req.run
+# req = req.select("*")
+# req.run
+# req = req.delete.where('FirstName','Bob')
+# req.run
+# req = req.select("*")
+# req.run
+
+# player_req = MySqliteRequest.new
+# player_req = player_req.from('nba_player_data.csv').select('*').run
+
 req = MySqliteRequest.new
-req = req.insert('small_test.csv').values("Male","Bob","Dylan","bob","rollingstone@hotmail.com","90","Somewhere","Apple iPhone","1","2020-03-05 15:19:48")
-req.run
-req = req.select("*")
-req.run
-req = req.delete.where('FirstName','Bob')
-req.run
-req = req.select("*")
-req.run
+req = req.update("small_test.csv").set({'FirstName' => 'Fartface'})
+req = req.select("*").run
