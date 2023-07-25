@@ -37,7 +37,6 @@ class MySqliteRequest
     end
 
     def where(column_name, criteria)
-
         @where_header = column_name
         @where_value = criteria
         return self
@@ -96,9 +95,11 @@ class MySqliteRequest
         end
 
         if @delete_rows
-            if where_header && where_value # if WHERE criteria specified
+            if @where_header && @where_value # if WHERE criteria specified
                 @full_table.delete_if { |row| row[@where_header] == @where_value }
-            
+                @where_header = nil
+                @where_value = nil
+
             else # not specified = delete all data
                 @full_table.delete_if { |row| row}
             end
@@ -132,6 +133,10 @@ end
 
 req = MySqliteRequest.new
 req = req.insert('small_test.csv').values("Male","Bob","Dylan","bob","rollingstone@hotmail.com","90","Somewhere","Apple iPhone","1","2020-03-05 15:19:48")
+req.run
+req = req.select("*")
+req.run
+req = req.delete.where('FirstName','Bob')
 req.run
 req = req.select("*")
 req.run
