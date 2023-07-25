@@ -12,14 +12,12 @@ class MySqliteRequest
         
         @ascending = nil
         @descending = nil
-
-        @insert_table = nil
     
     end
 
     def from(csv_name)
 
-        @csv_name = csv_name
+        @from_csv = csv_name # is this necessary?
         @full_table = CSV.parse(File.read(csv_name), headers: true)
         @full_headers = @full_table.headers
         return self
@@ -65,7 +63,7 @@ class MySqliteRequest
     end
 
     def insert(table_name)
-        @insert_csv = table_name
+        @insert_csv = table_name # could this be a boolean?
         @full_table = CSV.parse(File.read(table_name), headers: true)
         @full_headers = @full_table.headers
         return self
@@ -85,7 +83,7 @@ class MySqliteRequest
     end
 
     def delete
-
+        @delete_rows = true
         return self
     end
 
@@ -93,6 +91,18 @@ class MySqliteRequest
 
         if @insert_csv
             @full_table << @new_row
+            @insert_csv = nil
+            return self
+        end
+
+        if @delete_rows
+            if where_header && where_value # if WHERE criteria specified
+                @full_table.delete_if { |row| row[@where_header] == @where_value }
+            
+            else # not specified = delete all data
+                @full_table.delete_if { |row| row}
+            end
+            @delete_rows = nil
             return self
         end
 
@@ -101,7 +111,6 @@ class MySqliteRequest
             if @where_header && @where_value # if WHERE criteria specified
                 if row[@where_header] == @where_value
                     puts row.to_h.slice(*@select_headers)
-                    
                 end
             else # otherwise, print selected headers only
                 puts row.to_h.slice(*@select_headers)
@@ -109,6 +118,7 @@ class MySqliteRequest
             end
 
         end
+        return self
     end
 
 end
@@ -117,5 +127,11 @@ end
 # TEST HERE
 
 # MySqliteRequest.new.from('small_test.csv').select('*').run
+
 # MySqliteRequest.new.from('small_test.csv').select('Gender', 'Email', 'UserName').where('FirstName', 'Carl').run
-MySqliteRequest.new.insert('small_test.csv').values("Male","Bob","Dylan","bob","rollingstone@hotmail.com","90","Somewhere","Apple iPhone","1","2020-03-05 15:19:48").run
+
+req = MySqliteRequest.new
+req = req.insert('small_test.csv').values("Male","Bob","Dylan","bob","rollingstone@hotmail.com","90","Somewhere","Apple iPhone","1","2020-03-05 15:19:48")
+req.run
+req = req.select("*")
+req.run
