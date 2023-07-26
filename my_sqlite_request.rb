@@ -169,6 +169,7 @@ end
 # player_req = player_req.from('nba_player_data.csv').select('*').run
 
 req = MySqliteRequest.new
-req = req.update('small_test.csv').set({'FirstName'=>'Fartface'}).where('Gender', 'Male')
+req = req.update('small_test.csv').set({'FirstName'=>'Fartface'})
+req.run
 req = req.select('*')
 req.run
