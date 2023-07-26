@@ -10,8 +10,6 @@ class MySqliteRequest
         @where_header = nil
         @where_value = nil
         
-        @ascending = nil
-        @descending = nil
     
     end
 
@@ -24,8 +22,8 @@ class MySqliteRequest
 
     end
 
-    def select(*args)
-        args.each do |column_name|
+    def select(*columns)
+        columns.each do |column_name|
             if column_name == "*"
                 @select_headers = @full_headers
 
@@ -52,10 +50,10 @@ class MySqliteRequest
     def order(order, column_name)
         @order_header = column_name
 
-        if order == "asc"
-            @ascending = true
-        elsif order == "desc"
-            @descending = true
+        if order == :desc
+            @sorted_table = @full_table.sort_by { |row| row[@where_header]}.reverse
+        else
+            @sorted_table = @full_table.sort_by { |row| row[@where_header]}
         end
 
         return self
@@ -130,8 +128,14 @@ class MySqliteRequest
             return self
         end
 
+        which_table = nil
+        if @order_header
+            which_table = @sorted_table
+        else
+            which_table = @full_table
+        end
 
-        @full_table.each do |row|
+        which_table.each do |row|
 
             if @where_header && @where_value # if WHERE criteria specified
                 if row[@where_header] == @where_value
@@ -143,6 +147,7 @@ class MySqliteRequest
             end
 
         end
+        order_header = nil
         return self
     end
 
@@ -155,21 +160,4 @@ end
 
 # MySqliteRequest.new.from('small_test.csv').select('Gender', 'Email', 'UserName').where('FirstName', 'Carl').run
 
-# req = MySqliteRequest.new
-# req = req.insert('small_test.csv').values("Male","Bob","Dylan","bob","rollingstone@hotmail.com","90","Somewhere","Apple iPhone","1","2020-03-05 15:19:48")
-# req.run
-# req = req.select("*")
-# req.run
-# req = req.delete.where("FirstName", "Bob")
-# req.run
-# req = req.select("*")
-# req.run
-
-# player_req = MySqliteRequest.new
-# player_req = player_req.from('nba_player_data.csv').select('*').run
-
-req = MySqliteRequest.new
-req = req.update('small_test.csv').set({'FirstName'=>'Fartface'})
-req.run
-req = req.select('*')
-req.run
+MySqliteRequest.new.from('small_test.csv').select('*').order(:desc, 'Gender').run
