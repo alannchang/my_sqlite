@@ -74,14 +74,14 @@ class MySqliteRequest
     end
 
     def update(table_name)
-        @update_csv = table_name
+        @update_rows = table_name
         @full_table = CSV.parse(File.read(table_name), headers: true)
         @full_headers = @full_table.headers
         return self
     end
 
     def set(data)
-        @hash_data = data
+        @update_hash = data
         return self
     end
 
@@ -114,17 +114,20 @@ class MySqliteRequest
         if @update_rows
             @full_table.each do |row|
                 if @where_header && @where_value
-                    @hash_data.each do |key, value|
-                        row[key] = value
+                    if row[@where_header] == @where_value
+                        @update_hash.each do |key, value|
+                            row[key] = value
+                        end
                     end
                 else
-                    @hash_data.each do |key, value|
+                    @update_hash.each do |key, value|
                         row[key] = value
                     end
                 end
-                @update_rows = nil
-            return self
             end
+            
+            @update_rows = nil
+            return self
         end
 
 
@@ -157,7 +160,7 @@ end
 # req.run
 # req = req.select("*")
 # req.run
-# req = req.delete.where('FirstName','Bob')
+# req = req.delete.where("FirstName", "Bob")
 # req.run
 # req = req.select("*")
 # req.run
@@ -166,5 +169,6 @@ end
 # player_req = player_req.from('nba_player_data.csv').select('*').run
 
 req = MySqliteRequest.new
-req = req.update("small_test.csv").set({'FirstName' => 'Fartface'})
-req = req.select("*").run
+req = req.update('small_test.csv').set({'FirstName'=>'Fartface'}).where('Gender', 'Male')
+req = req.select('*')
+req.run
