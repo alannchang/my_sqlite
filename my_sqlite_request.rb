@@ -39,8 +39,19 @@ class MySqliteRequest
 
     def join(column_on_db_a, filename_db_b, column_on_db_b)
         @join_table = CSV.parse(File.read(filename_db_b), headers: true)
-        @join_header1 = column_on_db_a
-        @join_header2 = column_on_db_b
+        new_rows = []
+
+        @full_table.each do |row1|
+            matching_value = row1[column_on_db_a]
+
+            matching_rows = @join_table.select { |row2| row2[column_on_db_b] == matching_value}
+            matching_rows.each do |row2|
+                new_rows << row1.to_h.merge(row2.to_h)
+            end
+        end
+
+        headers = @full_headers + @join_table.headers.reject { |header| header == column_on_db_b}
+
         return self
     end
 
@@ -141,7 +152,7 @@ class MySqliteRequest
                 if row[@where_header] == @where_value
                     puts row.to_h.slice(*@select_headers)
                 end
-                
+
             # SELECT (WHERE absent)
             else
                 puts row.to_h.slice(*@select_headers)
@@ -161,4 +172,4 @@ end
 
 # MySqliteRequest.new.from('small_test.csv').select('Gender', 'Email', 'UserName').where('FirstName', 'Carl').run
 
-MySqliteRequest.new.from('small_test.csv').select('*').order(:asc, 'Age').run
+# MySqliteRequest.new.from('nba_players.csv').select('*').where('Player', 'Kareem Abdul-Jabbar*').run
