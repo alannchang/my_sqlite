@@ -10,12 +10,9 @@ class MySqliteRequest
         @where_header = nil
         @where_value = nil
         
-    
     end
 
     def from(csv_name)
-
-        @from_csv = csv_name # is this necessary?
         @full_table = CSV.parse(File.read(csv_name), headers: true)
         @full_headers = @full_table.headers
         return self
@@ -41,19 +38,17 @@ class MySqliteRequest
     end
 
     def join(column_on_db_a, filename_db_b, column_on_db_b)
-        @csv_name2 = filename_db_b
+        @join_table = CSV.parse(File.read(filename_db_b), headers: true)
         @join_header1 = column_on_db_a
         @join_header2 = column_on_db_b
         return self
     end
 
     def order(order, column_name)
-        @order_header = column_name
-
         if order == :desc
-            @sorted_table = @full_table.sort_by { |row| row[@where_header]}.reverse
+            @sorted_table = @full_table.sort_by { |row| row[column_name]}.reverse
         else
-            @sorted_table = @full_table.sort_by { |row| row[@where_header]}
+            @sorted_table = @full_table.sort_by { |row| row[column_name]}
         end
 
         return self
@@ -90,12 +85,14 @@ class MySqliteRequest
 
     def run
 
+        # INSERT/VALUES
         if @insert_csv
             @full_table << @new_row
             @insert_csv = nil
             return self
         end
 
+        # DELETE
         if @delete_rows
             if @where_header && @where_value # if WHERE criteria specified
                 @full_table.delete_if { |row| row[@where_header] == @where_value }
@@ -109,6 +106,7 @@ class MySqliteRequest
             return self
         end
 
+        # UPDATE/SET
         if @update_rows
             @full_table.each do |row|
                 if @where_header && @where_value
@@ -128,8 +126,9 @@ class MySqliteRequest
             return self
         end
 
+        # ORDER
         which_table = nil
-        if @order_header
+        if @sorted_table
             which_table = @sorted_table
         else
             which_table = @full_table
@@ -137,17 +136,19 @@ class MySqliteRequest
 
         which_table.each do |row|
 
-            if @where_header && @where_value # if WHERE criteria specified
+            # WHERE/SELECT
+            if @where_header && @where_value 
                 if row[@where_header] == @where_value
                     puts row.to_h.slice(*@select_headers)
                 end
-            else # otherwise, print selected headers only
-                puts row.to_h.slice(*@select_headers)
                 
+            # SELECT (WHERE absent)
+            else
+                puts row.to_h.slice(*@select_headers)
             end
 
         end
-        order_header = nil
+        @sorted_table = nil
         return self
     end
 
@@ -160,4 +161,4 @@ end
 
 # MySqliteRequest.new.from('small_test.csv').select('Gender', 'Email', 'UserName').where('FirstName', 'Carl').run
 
-MySqliteRequest.new.from('small_test.csv').select('*').order(:desc, 'Gender').run
+MySqliteRequest.new.from('small_test.csv').select('*').order(:asc, 'Age').run
