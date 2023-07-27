@@ -51,6 +51,8 @@ class MySqliteRequest
         end
 
         headers = @full_headers + @join_table.headers.reject { |header| header == column_on_db_b}
+        combined_data = new_rows.map { |row| CSV::Row.new(headers, row)}
+        @ultimate_table = CSV::Table.new(combined_data)
 
         return self
     end
