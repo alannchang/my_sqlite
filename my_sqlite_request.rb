@@ -20,6 +20,7 @@ class MySqliteRequest
     end
 
     def select(*columns)
+        @select_columns = columns
         columns.each do |column_name|
             if column_name == "*"
                 @select_headers = @full_headers
@@ -38,22 +39,27 @@ class MySqliteRequest
     end
 
     def join(column_on_db_a, filename_db_b, column_on_db_b)
-        @join_table = CSV.parse(File.read(filename_db_b), headers: true)
-        new_rows = []
+        @full_table2 = CSV.parse(File.read(filename_db_b), headers: true) # convert 2nd csv to CSV::Table object
+        @combined_headers = @full_headers + @full_table2.headers.reject { |header| header == column_on_db_b } 
+        @combined_table = CSV::Table.new([])
 
         @full_table.each do |row1|
-            matching_value = row1[column_on_db_a]
-
-            matching_rows = @join_table.select { |row2| row2[column_on_db_b] == matching_value}
-            matching_rows.each do |row2|
-                new_rows << row1.to_h.merge(row2.to_h)
+            matched_rows = @full_table2.find_all { |row2| row2[column_on_db_b] == row1[column_on_db_a] }
+            if matched_rows.any?
+                matched_rows.each do |row2|
+                    merged_row = CSV::Row.new(@combined_headers, [])
+                    @combined_headers.each do |header|
+                        merged_row[header] = row1[header] || row2[header]
+                    end
+                    @combined_table << merged_row
+                end
+            else
+                merged_row = CSV::Row.new(@combined_headers, [])
+                @combined_headers.each { |header| merged_row[header] = row1[header] }
+                @combined_table << merged_row
+                @full_headers = @combined_headers
             end
         end
-
-        headers = @full_headers + @join_table.headers.reject { |header| header == column_on_db_b}
-        combined_data = new_rows.map { |row| CSV::Row.new(headers, row)}
-        @ultimate_table = CSV::Table.new(combined_data)
-
         return self
     end
 
@@ -143,6 +149,9 @@ class MySqliteRequest
         which_table = nil
         if @sorted_table
             which_table = @sorted_table
+        elsif @combined_table
+            @select_headers = @combined_headers
+            which_table = @combined_table
         else
             which_table = @full_table
         end
@@ -174,4 +183,4 @@ end
 
 # MySqliteRequest.new.from('small_test.csv').select('Gender', 'Email', 'UserName').where('FirstName', 'Carl').run
 
-# MySqliteRequest.new.from('nba_players.csv').select('*').where('Player', 'Kareem Abdul-Jabbar*').run
+MySqliteRequest.new.from('nba_players.csv').select('*').join('Player', 'nba_player_data.csv', 'name').run
