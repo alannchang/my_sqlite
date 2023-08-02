@@ -23,6 +23,7 @@ class MySqliteRequest
         columns.each do |column_name|
             if column_name == "*"
                 @select_headers = @full_headers
+                break
 
             elsif @full_headers.include?(column_name)
                 @select_headers << column_name
@@ -181,17 +182,19 @@ class MySqliteRequest
 end
 
 
-# TESTS HERE
+# TESTS START HERE
 
-# FROM/SELECT
+# "FROM/SELECT"
 # BASIC TEST - 'SELECT *'
 # MySqliteRequest.new.from('small_test.csv').select('*').run
+# MULTIPLE SELECT ARGUMENTS
+MySqliteRequest.new.from('small_test.csv').select(['Gender', 'Email', 'UserName', 'Device']).run
 
 # WHERE 
 # BASIC TEST - ONE WHERE
-# MySqliteRequest.new.from('small_test.csv').select('Gender', 'Email', 'UserName').where('FirstName', 'Carl').run
+# MySqliteRequest.new.from('small_test.csv').select('*').where('FirstName', 'Carl').run
 # TEST MULTIPLE WHERE
-MySqliteRequest.new.from('small_test.csv').select('Gender', 'Email', 'UserName').where('Gender', 'Male').where('FirstName', 'Marvin').run
+# MySqliteRequest.new.from('small_test.csv').select(['Gender', 'Email', 'UserName']).where('Gender', 'Male').where('Device', 'Chrome Android').run
 
 # JOIN
 # MySqliteRequest.new.from('nba_players.csv').select('*').join('Player', 'nba_player_data.csv', 'name').run
