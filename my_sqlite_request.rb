@@ -158,8 +158,14 @@ class MySqliteRequest
         which_table.each do |row|
 
             # WHERE/SELECT
-            if !@where_header.empty? 
-                if row[@where_header] == @where_value
+            if !@where_header.empty? # if WHERE specified, 
+                wheres_present = 0
+                @where_header.zip(@where_value).each do |where_header, where_value|
+                    if row[where_header] == where_value
+                        wheres_present += 1
+                    end
+                end
+                if wheres_present == @where_header.length
                     puts row.to_h.slice(*@select_headers)
                 end
 
@@ -185,7 +191,7 @@ end
 # BASIC TEST - ONE WHERE
 # MySqliteRequest.new.from('small_test.csv').select('Gender', 'Email', 'UserName').where('FirstName', 'Carl').run
 # TEST MULTIPLE WHERE
-# MySqliteRequest.new.from('small_test.csv').select('Gender', 'Email', 'UserName').where('FirstName', 'Carl').run
+MySqliteRequest.new.from('small_test.csv').select('Gender', 'Email', 'UserName').where('Gender', 'Male').where('FirstName', 'Marvin').run
 
 # JOIN
 # MySqliteRequest.new.from('nba_players.csv').select('*').join('Player', 'nba_player_data.csv', 'name').run
@@ -194,7 +200,7 @@ end
 # TEST ASCENDING
 # MySqliteRequest.new.from('small_test.csv').select('*').order(:asc, 'Age').run
 # TEST DESCENDING
-MySqliteRequest.new.from('nba_players.csv').select('*').order(:desc, 'born').run
+# MySqliteRequest.new.from('nba_players.csv').select('*').order(:desc, 'born').run
 
 # INSERT/VALUES
 # MySqliteRequest.new.from('nba_players.csv').select('*').join('Player', 'nba_player_data.csv', 'name').run
