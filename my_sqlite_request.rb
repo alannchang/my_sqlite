@@ -4,7 +4,7 @@ class MySqliteRequest
     
     def initialize
         
-        # default values for instance variables
+    # default values for instance variables
         
         @select_headers = []
         @select_rows = nil
@@ -15,7 +15,7 @@ class MySqliteRequest
     
     end
 
-    def from(csv_name) # "must be present on each request" per the assignment page
+    def from(csv_name)
 
         @full_table = CSV.parse(File.read(csv_name), headers: true) # csv file to CSV::Table object
         @full_headers = @full_table.headers # array of headers from the table
@@ -25,7 +25,7 @@ class MySqliteRequest
 
     def select(column_names)
         
-        # @select_headers stores any/all headers specified by select function parameters
+    # @select_headers stores any/all headers specified by select function parameters
 
         if column_names.is_a?(Array) 
             @select_headers = column_names
@@ -42,7 +42,7 @@ class MySqliteRequest
 
     def where(column_name, criteria)
 
-        # @where_header and @where_value stores header value pairs to be singled out by where function
+    # @where_header and @where_value stores header value pairs to be singled out by where function
 
         @where_header << column_name
         @where_value << criteria
@@ -78,7 +78,7 @@ class MySqliteRequest
 
     def order(order, column_name)
 
-        # 'nil' values are given precedence in ascending order by use of two-element array in the sorting key used for sort_by method 
+    # 'nil' values are given precedence in ascending order by use of two-element array in the sorting key used for sort_by method 
 
         if order == :desc
             @sorted_table = @full_table.sort_by { |row| [row[column_name].nil? ? 0 : 1, row[column_name]] }.reverse
@@ -91,7 +91,7 @@ class MySqliteRequest
 
     def insert(table_name)
 
-        # a boolean is used to indicate we're inserting and csv file is converted to CSV::Table object
+    # a boolean is used to indicate we're inserting and csv file is converted to CSV::Table object
 
         @insert_csv = true
         @full_table = CSV.parse(File.read(table_name), headers: true)
@@ -102,7 +102,7 @@ class MySqliteRequest
 
     def values(*data)
 
-        # data to be inserted is converted to a CSV::Row object
+    # data to be inserted is converted to a CSV::Row object
 
         @new_row = CSV::Row.new(@full_headers, data)
         self
@@ -111,7 +111,7 @@ class MySqliteRequest
 
     def update(table_name)
 
-        # boolean is used to indicate we're updating and csv file is converted to CSV::Table object
+    # boolean is used to indicate we're updating and csv file is converted to CSV::Table object
 
         @update_rows = true
         @full_table = CSV.parse(File.read(table_name), headers: true)
@@ -122,7 +122,7 @@ class MySqliteRequest
 
     def set(data)
 
-        # not much to be said here :D
+    # not much to be said here :D
 
         @update_hash = data
         self
@@ -131,7 +131,7 @@ class MySqliteRequest
 
     def delete
         
-        # boolean to indicate we're deleting
+    # boolean to indicate we're deleting
 
         @delete_rows = true
         self
@@ -237,7 +237,7 @@ end
 # SINGLE WHERE
 # MySqliteRequest.new.from('small_test.csv').select('*').where('FirstName', 'Carl').run
 # MULTIPLE WHERES
-MySqliteRequest.new.from('small_test.csv').select(['Gender', 'Email', 'UserName', 'Device']).where('Gender', 'Male').where('Device', 'Chrome Android').run
+# MySqliteRequest.new.from('small_test.csv').select(['Gender', 'Email', 'UserName', 'Device']).where('Gender', 'Male').where('Device', 'Chrome Android').run
 
 # "JOIN"
 # MySqliteRequest.new.from('nba_players.csv').select('*').join('Player', 'nba_player_data.csv', 'name').run
