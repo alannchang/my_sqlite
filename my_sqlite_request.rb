@@ -6,9 +6,6 @@ class MySqliteRequest
         
     # default values for instance variables
         
-        @select_headers = []
-        @select_rows = nil
-
         @where_header = []
         @where_value = []
         self
@@ -27,15 +24,7 @@ class MySqliteRequest
         
     # @select_headers stores any/all headers specified by select function parameters
 
-        if column_names.is_a?(Array) 
-            @select_headers = column_names
-        else
-            if column_names == "*"
-                @select_headers = @full_headers
-            elsif @full_headers.include?(column_names)
-                @select_headers << column_names
-            end
-        end
+        @select_args = column_names
         self
 
     end
@@ -184,17 +173,30 @@ class MySqliteRequest
             return self
         end
 
-        # ORDER/JOIN
+        # ORDER/JOIN - check for presence of joined or ordered table
 
         which_table = nil
+        which_headers = nil
         if @sorted_table
             which_table = @sorted_table
         elsif @combined_table
-            @select_headers = @combined_headers # need to fix this!
-            # select(@select_columns)
             which_table = @combined_table
         else
             which_table = @full_table
+        end
+
+        # SELECT
+
+        if @select_args.is_a?(Array) 
+            @select_headers = @select_args
+        else
+            if @select_args == "*" && @combined_table
+                @select_headers = @combined_headers
+            elsif @select_args == "*"
+                @select_headers = @full_headers
+            else
+                @select_headers << @select_args
+            end
         end
 
         which_table.each do |row|
@@ -228,7 +230,7 @@ end
 
 # "FROM/SELECT"
 # SELECT - SINGLE ARGUMENT AS A STRING
-# MySqliteRequest.new.from('small_test.csv').select('*').run
+MySqliteRequest.new.select('*').from('small_test.csv').run
 # MySqliteRequest.new.from('small_test.csv').select('FirstName').run
 # SELECT - MULTIPLE ARGUMENTS AS AN ARRAY
 # MySqliteRequest.new.from('small_test.csv').select(['Gender', 'Email', 'UserName', 'Device']).run
@@ -240,7 +242,7 @@ end
 # MySqliteRequest.new.from('small_test.csv').select(['Gender', 'Email', 'UserName', 'Device']).where('Gender', 'Male').where('Device', 'Chrome Android').run
 
 # "JOIN"
-# MySqliteRequest.new.from('nba_players.csv').select('*').join('Player', 'nba_player_data.csv', 'name').run
+MySqliteRequest.new.from('nba_players.csv').select('*').join('Player', 'nba_player_data.csv', 'name').run
 
 # "ORDER"
 # TEST ASCENDING
