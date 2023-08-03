@@ -18,15 +18,14 @@ class MySqliteRequest
         self
     end
 
-    def select(*columns)
-        @select_columns = columns
-        columns.each do |column_name|
-            if column_name == "*"
+    def select(columns)
+        if columns.is_a?(Array)
+            @select_headers = columns
+        else
+            if columns == "*"
                 @select_headers = @full_headers
-                break
-
-            elsif @full_headers.include?(column_name)
-                @select_headers << column_name
+            elsif @full_headers.include?(columns)
+                @select_headers << columns
             end
         end
         return self
@@ -112,10 +111,10 @@ class MySqliteRequest
 
         # DELETE
         if @delete_rows
-            if @where_header && @where_value # if WHERE criteria specified
+            if !@where_header.empty? # if WHERE specified
                 @full_table.delete_if { |row| row[@where_header] == @where_value }
-                @where_header = nil
-                @where_value = nil
+                @where_header = []
+                @where_value = []
 
             else # not specified = delete all data
                 @full_table.delete_if { |row| row}
@@ -159,14 +158,12 @@ class MySqliteRequest
         which_table.each do |row|
 
             # WHERE/SELECT
-            if !@where_header.empty? # if WHERE specified, 
-                wheres_present = 0
+            if !@where_header.empty? # if WHERE specified
+                matched = true
                 @where_header.zip(@where_value).each do |where_header, where_value|
-                    if row[where_header] == where_value
-                        wheres_present += 1
-                    end
+                    matched = false unless row[where_header] == where_value
                 end
-                if wheres_present == @where_header.length
+                if matched == true
                     puts row.to_h.slice(*@select_headers)
                 end
 
@@ -185,33 +182,33 @@ end
 # TESTS START HERE
 
 # "FROM/SELECT"
-# BASIC TEST - 'SELECT *'
+# SELECT - SINGLE ARGUMENT AS A STRING
 # MySqliteRequest.new.from('small_test.csv').select('*').run
-# MULTIPLE SELECT ARGUMENTS
-MySqliteRequest.new.from('small_test.csv').select(['Gender', 'Email', 'UserName', 'Device']).run
+# MySqliteRequest.new.from('small_test.csv').select('FirstName').run
+# SELECT - MULTIPLE ARGUMENTS AS AN ARRAY
+# MySqliteRequest.new.from('small_test.csv').select(['Gender', 'Email', 'UserName', 'Device']).run
 
-# WHERE 
-# BASIC TEST - ONE WHERE
+# "WHERE"
+# SINGLE WHERE
 # MySqliteRequest.new.from('small_test.csv').select('*').where('FirstName', 'Carl').run
-# TEST MULTIPLE WHERE
-# MySqliteRequest.new.from('small_test.csv').select(['Gender', 'Email', 'UserName']).where('Gender', 'Male').where('Device', 'Chrome Android').run
+# MULTIPLE WHERES
+MySqliteRequest.new.from('small_test.csv').select(['Gender', 'Email', 'UserName', 'Device']).where('Gender', 'Male').where('Device', 'Chrome Android').run
 
-# JOIN
+# "JOIN"
 # MySqliteRequest.new.from('nba_players.csv').select('*').join('Player', 'nba_player_data.csv', 'name').run
 
-# ORDER
+# "ORDER"
 # TEST ASCENDING
 # MySqliteRequest.new.from('small_test.csv').select('*').order(:asc, 'Age').run
 # TEST DESCENDING
 # MySqliteRequest.new.from('nba_players.csv').select('*').order(:desc, 'born').run
 
-# INSERT/VALUES
+# "INSERT/VALUES"
 # MySqliteRequest.new.from('nba_players.csv').select('*').join('Player', 'nba_player_data.csv', 'name').run
 
-# UPDATE/SET
+# "UPDATE/SET"
 # MySqliteRequest.new.from('nba_players.csv').select('*').join('Player', 'nba_player_data.csv', 'name').run
 
-# DELETE
+# "DELETE"
 # request = MySqliteRequest.new.from('small_test.csv').delete.where('Device', 'Chrome Android').run
-# request = request.select('*')
-# request.run
+# request = request.select('*').run
