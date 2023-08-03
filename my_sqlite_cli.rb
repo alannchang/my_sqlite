@@ -1,11 +1,22 @@
 require './my_sqlite_request.rb'
 require "readline"
 
-=begin
-Create a program which will be a Command Line Interface (CLI) to your MySqlite class.
-It will use readline and we will run it with ruby my_sqlite_cli.rb
-=end
+while cmd_line = Readline.readline("my_sqlite_cli>", true)
+    
+    if cmd_line.downcase == "quit"
+        break
+    else
+        cmd_line_split = cmd_line.split
+        
+        cmd_line_split.each do |cmd|
+            case cmd
+            when "select"
+                puts "select baby!"
 
-while buf = Readline.readline("my_sqlite_cli>", true)
-    p buf
+
+
+
+        puts cmd_line_split # TEST PRINT
+    end
+
 end
