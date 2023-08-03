@@ -3,41 +3,55 @@ require 'csv'
 class MySqliteRequest
     
     def initialize
-
+        
+        # default values for instance variables
+        
         @select_headers = []
         @select_rows = nil
 
         @where_header = []
         @where_value = []
         self
+    
     end
 
-    def from(csv_name)
-        @full_table = CSV.parse(File.read(csv_name), headers: true)
-        @full_headers = @full_table.headers
+    def from(csv_name) # "must be present on each request" per the assignment page
+
+        @full_table = CSV.parse(File.read(csv_name), headers: true) # csv file to CSV::Table object
+        @full_headers = @full_table.headers # array of headers from the table
         self
+
     end
 
-    def select(columns)
-        if columns.is_a?(Array)
-            @select_headers = columns
+    def select(column_names)
+        
+        # @select_headers stores any/all headers specified by select function parameters
+
+        if column_names.is_a?(Array) 
+            @select_headers = column_names
         else
-            if columns == "*"
+            if column_names == "*"
                 @select_headers = @full_headers
-            elsif @full_headers.include?(columns)
-                @select_headers << columns
+            elsif @full_headers.include?(column_names)
+                @select_headers << column_names
             end
         end
-        return self
+        self
+
     end
 
     def where(column_name, criteria)
+
+        # @where_header and @where_value stores header value pairs to be singled out by where function
+
         @where_header << column_name
         @where_value << criteria
         self
+    
     end
 
     def join(column_on_db_a, filename_db_b, column_on_db_b)
+
         @full_table2 = CSV.parse(File.read(filename_db_b), headers: true) # convert 2nd csv to CSV::Table object
         @combined_headers = @full_headers + @full_table2.headers.reject { |header| header == column_on_db_b } # combine all the headers except for column_on_db_b 
         @combined_table = CSV::Table.new([]) # this is the new 'joined' table
@@ -59,50 +73,75 @@ class MySqliteRequest
             end
         end
         self
+
     end
 
     def order(order, column_name)
+
+        # 'nil' values are given precedence in ascending order by use of two-element array in the sorting key used for sort_by method 
+
         if order == :desc
             @sorted_table = @full_table.sort_by { |row| [row[column_name].nil? ? 0 : 1, row[column_name]] }.reverse
         else
             @sorted_table = @full_table.sort_by { |row| [row[column_name].nil? ? 0 : 1, row[column_name]] }
         end
-
         self
+
     end
 
     def insert(table_name)
-        @insert_csv = table_name # could this be a boolean?
+
+        # a boolean is used to indicate we're inserting and csv file is converted to CSV::Table object
+
+        @insert_csv = true
         @full_table = CSV.parse(File.read(table_name), headers: true)
         @full_headers = @full_table.headers
         self
+
     end
 
     def values(*data)
+
+        # data to be inserted is converted to a CSV::Row object
+
         @new_row = CSV::Row.new(@full_headers, data)
         self
+
     end
 
     def update(table_name)
-        @update_rows = table_name
+
+        # boolean is used to indicate we're updating and csv file is converted to CSV::Table object
+
+        @update_rows = true
         @full_table = CSV.parse(File.read(table_name), headers: true)
         @full_headers = @full_table.headers
         self
+        
     end
 
     def set(data)
+
+        # not much to be said here :D
+
         @update_hash = data
         self
+
     end
 
     def delete
+        
+        # boolean to indicate we're deleting
+
         @delete_rows = true
         self
+
     end
 
     def run
 
         # INSERT/VALUES
+
         if @insert_csv
             @full_table << @new_row
             @insert_csv = nil
@@ -110,6 +149,7 @@ class MySqliteRequest
         end
 
         # DELETE
+
         if @delete_rows
             if !@where_header.empty? # if WHERE specified
                 @full_table.delete_if { |row| row[@where_header] == @where_value }
@@ -124,6 +164,7 @@ class MySqliteRequest
         end
 
         # UPDATE/SET
+
         if @update_rows
             @full_table.each do |row|
                 if @where_header && @where_value
@@ -144,11 +185,12 @@ class MySqliteRequest
         end
 
         # ORDER/JOIN
+
         which_table = nil
         if @sorted_table
             which_table = @sorted_table
         elsif @combined_table
-            @select_headers = @combined_headers
+            @select_headers = @combined_headers # need to fix this!
             # select(@select_columns)
             which_table = @combined_table
         else
@@ -158,6 +200,7 @@ class MySqliteRequest
         which_table.each do |row|
 
             # WHERE/SELECT
+
             if !@where_header.empty? # if WHERE specified
                 matched = true
                 @where_header.zip(@where_value).each do |where_header, where_value|
@@ -168,12 +211,14 @@ class MySqliteRequest
                 end
 
             # SELECT (WHERE absent)
+
             else
                 puts row.to_h.slice(*@select_headers)
             end
 
         end
         @sorted_table = nil
+        @combined_table = nil
     end
 
 end
