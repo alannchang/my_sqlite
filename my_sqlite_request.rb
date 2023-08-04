@@ -138,12 +138,11 @@ class MySqliteRequest
         # DELETE
 
         if @delete_rows
-            if !@where_header.empty? # if WHERE specified
-                @full_table.delete_if { |row| row[@where_header] == @where_value }
-                @where_header = []
-                @where_value = []
+            if !@where_hash.empty? # if WHERE specified
+                @full_table.delete_if { |row| @where_hash.all? { |key, value| row[key] == value } }
+                @where_hash = {}
 
-            else # not specified = delete all data
+            else # not specified = delete all data/rows
                 @full_table.delete_if { |row| row}
             end
             @delete_rows = nil
@@ -154,10 +153,10 @@ class MySqliteRequest
 
         if @update_rows
             @full_table.each do |row|
-                if @where_header && @where_value
-                    if row[@where_header] == @where_value
+                if !@where_hash.empty? 
+                    if @where_hash.all? { |key, value| row[key] == value }
                         @update_hash.each do |key, value|
-                            row[key] = value
+                            row[key] = value 
                         end
                     end
                 else
@@ -200,12 +199,8 @@ class MySqliteRequest
 
             # WHERE/SELECT
 
-            if !@where_header.empty? # if WHERE specified
-                matched = true
-                @where_header.zip(@where_value).each do |where_header, where_value|
-                    matched = false unless row[where_header] == where_value
-                end
-                if matched == true
+            if !@where_hash.empty? 
+                if @where_hash.all? { |key, value| row[key] == value }
                     puts row.to_h.slice(*@select_headers)
                 end
 
@@ -252,9 +247,9 @@ end
 # request = request.select('*').run
 
 # "UPDATE/SET"
-request = MySqliteRequest.new.update('small_test.csv').set({"Gender"=>"Male", "FirstName"=>"John", "LastName"=>"Smith", "UserName"=>"john", "Email"=>"john.smith@aol.com", "Age"=>"90", "City"=>"San Andreas", "Device"=>"Chrome Android", "Coffee Quantity"=>"1", "Order At"=>"1990-10-25 5:23:51"}).run
-request = request.select('*').run
+# request = MySqliteRequest.new.update('small_test.csv').set({"Gender"=>"Male", "FirstName"=>"John", "LastName"=>"Smith", "UserName"=>"john", "Email"=>"john.smith@aol.com", "Age"=>"90", "City"=>"San Andreas", "Device"=>"Chrome Android", "Coffee Quantity"=>"1", "Order At"=>"1990-10-25 5:23:51"}).where('Gender', 'Male').run
+# request = request.select('*').run
 
 # "DELETE"
-# request = MySqliteRequest.new.from('small_test.csv').delete.where('Device', 'Chrome Android').run
+# request = MySqliteRequest.new.from('small_test.csv').delete.where('Gender', 'Female').where('Age', '81').run
 # request = request.select('*').run
