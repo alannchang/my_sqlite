@@ -13,15 +13,17 @@ class MySqliteRequest
 
     def from(csv_name)
 
-        @full_table = CSV.parse(File.read(csv_name), headers: true) # csv file to CSV::Table object
-        @full_headers = @full_table.headers # array of headers from the table
+    # parses csv file, converts it to a CSV::Table object and stores the headers 
+
+        @full_table = CSV.parse(File.read(csv_name), headers: true) 
+        @full_headers = @full_table.headers
         self
 
     end
 
     def select(column_names)
         
-    # @select_headers stores any/all headers specified by select function parameters
+    # @select_args stores the headers specified by SELECT function parameters
 
         @select_args = column_names
         self
@@ -30,7 +32,7 @@ class MySqliteRequest
 
     def where(column_name, criteria)
 
-    # @where_header and @where_value stores header value pairs to be singled out by where function
+    # @where_hash stores header-value pairs in a hash to be singled out in the run function
 
         @where_hash[column_name] = criteria
         self
@@ -38,6 +40,8 @@ class MySqliteRequest
     end
 
     def join(column_on_db_a, filename_db_b, column_on_db_b)
+
+    # 'joins' another database with the database specified by the FROM function
 
         @full_table2 = CSV.parse(File.read(filename_db_b), headers: true) # convert 2nd csv to CSV::Table object
         @combined_headers = @full_headers + @full_table2.headers.reject { |header| header == column_on_db_b } # combine all the headers except for column_on_db_b 
@@ -89,7 +93,7 @@ class MySqliteRequest
 
     def values(data)
 
-    # data to be inserted is converted to a CSV::Row object
+    # data used by INSERT function
 
         @new_row = data
         self
@@ -109,7 +113,7 @@ class MySqliteRequest
 
     def set(data)
 
-    # not much to be said here :D
+    # data used by UPDATE function
 
         @update_hash = data
         self
@@ -131,21 +135,21 @@ class MySqliteRequest
 
         if @insert_csv
             @full_table << @new_row
-            @insert_csv = nil
+            @insert_csv = nil # reset after insertion complete
             return self
         end
 
         # DELETE
 
         if @delete_rows
-            if !@where_hash.empty? # if WHERE specified
+            if !@where_hash.empty? # if WHERE specified, delete only rows that have column values that match WHERE parameters
                 @full_table.delete_if { |row| @where_hash.all? { |key, value| row[key] == value } }
-                @where_hash = {}
+                @where_hash = {} # reset WHERE after complete
 
-            else # not specified = delete all data/rows
+            else # if no WHERE, delete all data/rows
                 @full_table.delete_if { |row| row}
             end
-            @delete_rows = nil
+            @delete_rows = nil # reset after deletion complete
             return self
         end
 
@@ -153,26 +157,28 @@ class MySqliteRequest
 
         if @update_rows
             @full_table.each do |row|
-                if !@where_hash.empty? 
+                if !@where_hash.empty? # if WHERE specified, update only rows that have column values that match WHERE parameters
                     if @where_hash.all? { |key, value| row[key] == value }
                         @update_hash.each do |key, value|
                             row[key] = value 
                         end
                     end
-                else
+                    @where_hash = {} # reset WHERE after complete
+                else # if no WHERE, update all rows
                     @update_hash.each do |key, value|
                         row[key] = value
                     end
                 end
             end
             
-            @update_rows = nil
+            @update_rows = nil # reset after updating complete
             return self
         end
 
         # ORDER/JOIN - check for presence of joined or ordered table
 
         which_table = nil
+
         if @sorted_table
             which_table = @sorted_table
         elsif @combined_table
@@ -191,7 +197,7 @@ class MySqliteRequest
             elsif @select_args == "*"
                 @select_headers = @full_headers
             else
-                @select_headers << @select_args
+                @select_headers = @select_args
             end
         end
 
@@ -199,18 +205,22 @@ class MySqliteRequest
 
             # WHERE/SELECT
 
-            if !@where_hash.empty? 
+            if !@where_hash.empty? # if WHERE specified, we only SELECT or print rows that have column values that match WHERE parameters
                 if @where_hash.all? { |key, value| row[key] == value }
-                    puts row.to_h.slice(*@select_headers)
+                    puts row.to_h.slice(*@select_headers) # only 'select' columns/headers get printed
                 end
 
             # SELECT (WHERE absent)
 
-            else
-                puts row.to_h.slice(*@select_headers)
+            else # no WHERE means we print all columns
+                puts row.to_h.slice(*@select_headers) # only 'select' columns/headers get printed
             end
 
         end
+
+        # Reset after complete
+        @select_args = nil
+        @where_hash = {}
         @sorted_table = nil
         @combined_table = nil
     end
@@ -231,7 +241,7 @@ end
 # SINGLE WHERE
 # MySqliteRequest.new.select('*').from('small_test.csv').where('FirstName', 'Carl').run
 # MULTIPLE WHERES
-# MySqliteRequest.new.select(['Gender', 'Email', 'UserName', 'Device']).from('small_test.csv').where('Gender', 'Male').where('Device', 'Chrome Android').run
+# MySqliteRequest.new.select(['Gender', 'LastName', 'UserName', 'Age']).from('small_test.csv').where('Gender', 'Male').where('Device', 'Chrome Android').run
 
 # "JOIN"
 # MySqliteRequest.new.select(['Player', 'height', 'position']).from('nba_players.csv').join('Player', 'nba_player_data.csv', 'name').run
@@ -247,9 +257,9 @@ end
 # request = request.select('*').run
 
 # "UPDATE/SET"
-# request = MySqliteRequest.new.update('small_test.csv').set({"Gender"=>"Male", "FirstName"=>"John", "LastName"=>"Smith", "UserName"=>"john", "Email"=>"john.smith@aol.com", "Age"=>"90", "City"=>"San Andreas", "Device"=>"Chrome Android", "Coffee Quantity"=>"1", "Order At"=>"1990-10-25 5:23:51"}).where('Gender', 'Male').run
+# request = MySqliteRequest.new.update('small_test.csv').set({"Coffee Quantity"=>"99"}).where('Gender', 'Male').run
 # request = request.select('*').run
 
 # "DELETE"
-# request = MySqliteRequest.new.from('small_test.csv').delete.where('Gender', 'Female').where('Age', '81').run
+# request = MySqliteRequest.new.from('small_test.csv').delete.where('Gender', 'Female').where('Age', '21').run
 # request = request.select('*').run
