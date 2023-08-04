@@ -6,8 +6,7 @@ class MySqliteRequest
         
     # default values for instance variables
         
-        @where_header = []
-        @where_value = []
+        @where_hash = {}
         self
     
     end
@@ -33,8 +32,7 @@ class MySqliteRequest
 
     # @where_header and @where_value stores header value pairs to be singled out by where function
 
-        @where_header << column_name
-        @where_value << criteria
+        @where_hash[column_name] = criteria
         self
     
     end
@@ -89,11 +87,11 @@ class MySqliteRequest
 
     end
 
-    def values(*data)
+    def values(data)
 
     # data to be inserted is converted to a CSV::Row object
 
-        @new_row = CSV::Row.new(@full_headers, data)
+        @new_row = data
         self
 
     end
@@ -176,7 +174,6 @@ class MySqliteRequest
         # ORDER/JOIN - check for presence of joined or ordered table
 
         which_table = nil
-        which_headers = nil
         if @sorted_table
             which_table = @sorted_table
         elsif @combined_table
@@ -185,7 +182,7 @@ class MySqliteRequest
             which_table = @full_table
         end
 
-        # SELECT
+        # SELECT - select headers to be printed
 
         if @select_args.is_a?(Array) 
             @select_headers = @select_args
@@ -230,31 +227,33 @@ end
 
 # "FROM/SELECT"
 # SELECT - SINGLE ARGUMENT AS A STRING
-MySqliteRequest.new.select('*').from('small_test.csv').run
-# MySqliteRequest.new.from('small_test.csv').select('FirstName').run
-# SELECT - MULTIPLE ARGUMENTS AS AN ARRAY
-# MySqliteRequest.new.from('small_test.csv').select(['Gender', 'Email', 'UserName', 'Device']).run
+# MySqliteRequest.new.select('*').from('small_test.csv').run
+# MySqliteRequest.new.select('FirstName').from('small_test.csv').run
+# # SELECT - MULTIPLE ARGUMENTS AS AN ARRAY
+# MySqliteRequest.new.select(['Gender', 'Email', 'UserName', 'Device']).from('small_test.csv').run
 
 # "WHERE"
 # SINGLE WHERE
-# MySqliteRequest.new.from('small_test.csv').select('*').where('FirstName', 'Carl').run
+# MySqliteRequest.new.select('*').from('small_test.csv').where('FirstName', 'Carl').run
 # MULTIPLE WHERES
-# MySqliteRequest.new.from('small_test.csv').select(['Gender', 'Email', 'UserName', 'Device']).where('Gender', 'Male').where('Device', 'Chrome Android').run
+# MySqliteRequest.new.select(['Gender', 'Email', 'UserName', 'Device']).from('small_test.csv').where('Gender', 'Male').where('Device', 'Chrome Android').run
 
 # "JOIN"
-MySqliteRequest.new.from('nba_players.csv').select('*').join('Player', 'nba_player_data.csv', 'name').run
+# MySqliteRequest.new.select(['Player', 'height', 'position']).from('nba_players.csv').join('Player', 'nba_player_data.csv', 'name').run
 
 # "ORDER"
-# TEST ASCENDING
-# MySqliteRequest.new.from('small_test.csv').select('*').order(:asc, 'Age').run
-# TEST DESCENDING
-# MySqliteRequest.new.from('nba_players.csv').select('*').order(:desc, 'born').run
+# ASCENDING
+# MySqliteRequest.new.select('*').from('small_test.csv').order(:asc, 'Age').run
+# DESCENDING
+# MySqliteRequest.new.select('*').from('nba_players.csv').order(:desc, 'born').run
 
 # "INSERT/VALUES"
-# MySqliteRequest.new.from('nba_players.csv').select('*').join('Player', 'nba_player_data.csv', 'name').run
+# request = MySqliteRequest.new.insert('small_test.csv').values({"Gender"=>"Male", "FirstName"=>"John", "LastName"=>"Smith", "UserName"=>"john", "Email"=>"john.smith@aol.com", "Age"=>"90", "City"=>"San Andreas", "Device"=>"Chrome Android", "Coffee Quantity"=>"1", "Order At"=>"1990-10-25 5:23:51"}).run
+# request = request.select('*').run
 
 # "UPDATE/SET"
-# MySqliteRequest.new.from('nba_players.csv').select('*').join('Player', 'nba_player_data.csv', 'name').run
+request = MySqliteRequest.new.update('small_test.csv').set({"Gender"=>"Male", "FirstName"=>"John", "LastName"=>"Smith", "UserName"=>"john", "Email"=>"john.smith@aol.com", "Age"=>"90", "City"=>"San Andreas", "Device"=>"Chrome Android", "Coffee Quantity"=>"1", "Order At"=>"1990-10-25 5:23:51"}).run
+request = request.select('*').run
 
 # "DELETE"
 # request = MySqliteRequest.new.from('small_test.csv').delete.where('Device', 'Chrome Android').run
