@@ -52,8 +52,9 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
 
         arr_of_hash.each do |hash|
             hash.each_value do |value|
-                print value
+                print "#{value}|"
             end
+            print "\n"
         end
 
     end
