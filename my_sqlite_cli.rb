@@ -1,8 +1,10 @@
-require 'json'
 require './my_sqlite_request.rb'
 require "readline"
 
 COMMANDS = ["SELECT", "FROM", "WHERE", "JOIN", "ON", "ORDER", "BY", "INSERT", "INTO", "VALUES", "UPDATE", "SET", "DELETE"]
+
+class MySqliteCli < MySqliteRequest
+
 
 while cmd_line = Readline.readline("my_sqlite_cli>", true)
     
@@ -13,18 +15,18 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
         # find main .csv file
         if cmd_arr.include?("FROM")
             i_from = cmd_arr.index("FROM")
-            request = MySqliteRequest.new.from(cmd_arr[i_from + 1])
+            query = MySqliteCli.new.from(cmd_arr[i_from + 1])
             cmd_arr.delete_at(i_from)
             cmd_arr.delete_at(i_from + 1)
         elsif cmd_arr.include?("INSERT")
             i_insert = cmd_arr.index("INSERT")
-            request = MySqliteRequest.new.insert(cmd_arr[i_insert + 2])
+            query = MySqliteCli.new.insert(cmd_arr[i_insert + 2])
             cmd_arr.delete_at(i_insert)
             cmd_arr.delete_at(i_insert + 1)
             cmd_arr.delete_at(i_insert + 2)
         elsif cmd_arr.include?("UPDATE")
             i_update = cmd_arr.index("UPDATE")
-            request = MySqliteRequest.new.update(cmd_arr[i_update + 1])
+            query = MySqliteCli.new.update(cmd_arr[i_update + 1])
             cmd_arr.delete_at(i_update)
             cmd_arr.delete_at(i_update + 1)
         end
@@ -32,30 +34,12 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
         cmd_arr.each_with_index do |element, index|
             if element == "SELECT"
                 if cmd_arr[index + 1] == "*"
-                    request = request.select('*')
+                    query = query.select('*')
                 end
             end
         end
 
-        # capture/store output from my_sqlite_request.rb
-        output = StringIO.new
-        $stdout = output
 
-        request = request.run
-
-        $stdout = STDOUT
-
-        # convert output string to a hash
-        new_output = output.string.gsub("=>", ": ").lines.map(&:strip)
-        new_output = "[#{new_output.join(',')}]"
-        arr_of_hash = JSON.parse(new_output.gsub("nil", "null"))
-
-        arr_of_hash.each do |hash|
-            hash.each_value do |value|
-                print "#{value}|"
-            end
-            print "\n"
-        end
 
     end
 
