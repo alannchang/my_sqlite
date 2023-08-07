@@ -46,9 +46,9 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
         $stdout = STDOUT
 
         # convert output string to a hash
-        new_output = output.string.gsub('"=>"', '": "').lines.map(&:strip)
+        new_output = output.string.gsub("=>", ": ").lines.map(&:strip)
         new_output = "[#{new_output.join(',')}]"
-        arr_of_hash = JSON.parse(new_output)
+        arr_of_hash = JSON.parse(new_output.gsub("nil", "null"))
 
         arr_of_hash.each do |hash|
             hash.each_value do |value|
