@@ -1,3 +1,4 @@
+require 'json'
 require './my_sqlite_request.rb'
 require "readline"
 
@@ -9,29 +10,51 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
         break
     else
         cmd_arr = cmd_line.split
-
+        # find main .csv file
         if cmd_arr.include?("FROM")
             i_from = cmd_arr.index("FROM")
             request = MySqliteRequest.new.from(cmd_arr[i_from + 1])
-            arr.delete_at(i_from)
-            arr.delete_at(i_from + 1)
+            cmd_arr.delete_at(i_from)
+            cmd_arr.delete_at(i_from + 1)
         elsif cmd_arr.include?("INSERT")
             i_insert = cmd_arr.index("INSERT")
             request = MySqliteRequest.new.insert(cmd_arr[i_insert + 2])
-            arr.delete_at(i_insert)
-            arr.delete_at(i_insert + 1)
-            arr.delete_at(i_insert + 2)
+            cmd_arr.delete_at(i_insert)
+            cmd_arr.delete_at(i_insert + 1)
+            cmd_arr.delete_at(i_insert + 2)
         elsif cmd_arr.include?("UPDATE")
             i_update = cmd_arr.index("UPDATE")
             request = MySqliteRequest.new.update(cmd_arr[i_update + 1])
-            arr.delete_at(i_update)
-            arr.delete_at(i_update + 1)
+            cmd_arr.delete_at(i_update)
+            cmd_arr.delete_at(i_update + 1)
+        end
 
         cmd_arr.each_with_index do |element, index|
             if element == "SELECT"
+                if cmd_arr[index + 1] == "*"
+                    request = request.select('*')
+                end
+            end
+        end
 
+        # capture/store output from my_sqlite_request.rb
+        output = StringIO.new
+        $stdout = output
 
-        puts cmd_line_split
+        request = request.run
+
+        $stdout = STDOUT
+
+        # convert output string to a hash
+        new_output = output.string.gsub('"=>"', '": "').lines.map(&:strip)
+        new_output = "[#{new_output.join(',')}]"
+        arr_of_hash = JSON.parse(new_output)
+
+        arr_of_hash.each do |hash|
+            hash.each_value do |value|
+                print value
+            end
+        end
 
     end
 
