@@ -4,6 +4,7 @@ require "readline"
 COMMANDS = ["SELECT", "FROM", "WHERE", "JOIN", "ON", "ORDER", "BY", "INSERT", "INTO", "VALUES", "UPDATE", "SET", "DELETE"]
 
 class MySqliteCli < MySqliteRequest
+end
 
 
 while cmd_line = Readline.readline("my_sqlite_cli>", true)
@@ -38,6 +39,15 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
                 end
             end
         end
+
+        query = query.run do |row|
+            row.each_with_index do |(key, value), index|
+              print "#{value}"
+              print "|" if index < row.length - 1
+            end
+            print "\n"
+          end
+            
 
 
 

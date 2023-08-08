@@ -207,13 +207,21 @@ class MySqliteRequest
 
             if !@where_hash.empty? # if WHERE specified, we only SELECT or print rows that have column values that match WHERE parameters
                 if @where_hash.all? { |key, value| row[key] == value }
-                    puts row.to_h.slice(*@select_headers) # only 'select' columns/headers get printed
+                    if block_given?
+                        yield(row)
+                    else
+                        puts row.to_h.slice(*@select_headers) # only 'select' columns/headers get printed
+                    end
                 end
 
             # SELECT (WHERE absent)
 
             else # no WHERE means we print all columns
-                puts row.to_h.slice(*@select_headers) # only 'select' columns/headers get printed
+                if block_given?
+                    yield(row)
+                else
+                    puts row.to_h.slice(*@select_headers) # only 'select' columns/headers get printed
+                end
             end
 
         end
@@ -234,31 +242,40 @@ end
 # SELECT - SINGLE ARGUMENT AS A STRING
 # MySqliteRequest.new.select('*').from('small_test.csv').run
 # MySqliteRequest.new.select('FirstName').from('small_test.csv').run
+
 # # SELECT - MULTIPLE ARGUMENTS AS AN ARRAY
 # MySqliteRequest.new.select(['Gender', 'Email', 'UserName', 'Device']).from('small_test.csv').run
+
 
 # "WHERE"
 # SINGLE WHERE
 # MySqliteRequest.new.select('*').from('small_test.csv').where('FirstName', 'Carl').run
+
 # MULTIPLE WHERES
 # MySqliteRequest.new.select(['Gender', 'LastName', 'UserName', 'Age']).from('small_test.csv').where('Gender', 'Male').where('Device', 'Chrome Android').run
+
 
 # "JOIN"
 # MySqliteRequest.new.select(['Player', 'height', 'position']).from('nba_players.csv').join('Player', 'nba_player_data.csv', 'name').run
 
+
 # "ORDER"
 # ASCENDING
 # MySqliteRequest.new.select('*').from('small_test.csv').order(:asc, 'Age').run
+
 # DESCENDING
 # MySqliteRequest.new.select('*').from('nba_players.csv').order(:desc, 'born').run
+
 
 # "INSERT/VALUES"
 # request = MySqliteRequest.new.insert('small_test.csv').values({"Gender"=>"Male", "FirstName"=>"John", "LastName"=>"Smith", "UserName"=>"john", "Email"=>"john.smith@aol.com", "Age"=>"90", "City"=>"San Andreas", "Device"=>"Chrome Android", "Coffee Quantity"=>"1", "Order At"=>"1990-10-25 5:23:51"}).run
 # request = request.select('*').run
 
+
 # "UPDATE/SET"
 # request = MySqliteRequest.new.update('small_test.csv').set({"Coffee Quantity"=>"99"}).where('Gender', 'Male').run
 # request = request.select('*').run
+
 
 # "DELETE"
 # request = MySqliteRequest.new.from('small_test.csv').delete.where('Gender', 'Female').where('Age', '21').run
