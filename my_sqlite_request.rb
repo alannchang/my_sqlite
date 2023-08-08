@@ -163,14 +163,14 @@ class MySqliteRequest
                             row[key] = value 
                         end
                     end
-                    @where_hash = {} # reset WHERE after complete
+                    
                 else # if no WHERE, update all rows
                     @update_hash.each do |key, value|
                         row[key] = value
                     end
                 end
             end
-            
+            @where_hash = {} # reset WHERE after complete
             @update_rows = nil # reset after updating complete
             return self
         end
@@ -249,7 +249,7 @@ end
 
 # "WHERE"
 # SINGLE WHERE
-# MySqliteRequest.new.select('*').from('small_test.csv').where('FirstName', 'Carl').run
+# MySqliteRequest.new.select('*').from('small_test.csv').where('Gender', 'Female').run
 
 # MULTIPLE WHERES
 # MySqliteRequest.new.select(['Gender', 'LastName', 'UserName', 'Age']).from('small_test.csv').where('Gender', 'Male').where('Device', 'Chrome Android').run
@@ -268,15 +268,21 @@ end
 
 
 # "INSERT/VALUES"
-# request = MySqliteRequest.new.insert('small_test.csv').values({"Gender"=>"Male", "FirstName"=>"John", "LastName"=>"Smith", "UserName"=>"john", "Email"=>"john.smith@aol.com", "Age"=>"90", "City"=>"San Andreas", "Device"=>"Chrome Android", "Coffee Quantity"=>"1", "Order At"=>"1990-10-25 5:23:51"}).run
+# request = MySqliteRequest.new.insert('small_test.csv').values({"Gender"=>"Male", "FirstName"=>"John", "LastName"=>"Smith", "UserName"=>"john", "Email"=>"john.smith@aol.com", "Age"=>"90", "City"=>"San Andreas", "Device"=>"Chrome Android", "Coffee_Quantity"=>"1", "Order_At"=>"1990-10-25 5:23:51"}).run
 # request = request.select('*').run
 
 
 # "UPDATE/SET"
-# request = MySqliteRequest.new.update('small_test.csv').set({"Coffee Quantity"=>"99"}).where('Gender', 'Male').run
+request = MySqliteRequest.new.update('small_test.csv').set({"Coffee_Quantity"=>"99", "Age"=>"99"}).where('Gender', 'Male').run
+request = request.select('*').run
+
+# request = MySqliteRequest.new.update('small_test.csv').set({"Age"=>"99"}).run
 # request = request.select('*').run
 
 
 # "DELETE"
-# request = MySqliteRequest.new.from('small_test.csv').delete.where('Gender', 'Female').where('Age', '21').run
+# request = MySqliteRequest.new.from('small_test.csv').delete.where('Gender', 'Male').run
+# request = request.select('*').run
+
+# request = MySqliteRequest.new.from('small_test.csv').delete.run
 # request = request.select('*').run
