@@ -60,6 +60,11 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
             when "ORDER"
             when "VALUES"
             when "SET"
+                data = {}
+                column = cmd_arr[index + 1]
+                value = cmd_arr[index + 3][1..-2]
+                data[column] = value
+                query = query.set(data)
             end
         end
 
