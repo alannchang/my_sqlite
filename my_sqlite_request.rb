@@ -218,7 +218,7 @@ class MySqliteRequest
 
             else # no WHERE means we print all columns
                 if block_given?
-                    yield(row)
+                    yield(row, @select_headers)
                 else
                     puts row.to_h.slice(*@select_headers) # only 'select' columns/headers get printed
                 end
