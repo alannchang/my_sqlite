@@ -208,7 +208,7 @@ class MySqliteRequest
             if !@where_hash.empty? # if WHERE specified, we only SELECT or print rows that have column values that match WHERE parameters
                 if @where_hash.all? { |key, value| row[key] == value }
                     if block_given?
-                        yield(row)
+                        yield(row, @select_headers)
                     else
                         puts row.to_h.slice(*@select_headers) # only 'select' columns/headers get printed
                     end

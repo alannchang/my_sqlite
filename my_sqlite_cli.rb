@@ -52,10 +52,10 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
                     headers << cmd_arr[index + n]
                     query = query.select(headers)
                 end
-
-
-
             when "WHERE"
+                column_name = cmd_arr[index + 1]
+                criteria = cmd_arr[index + 3][1..-2]
+                query = query.where(column_name, criteria)
             when "JOIN"
             when "ORDER"
             when "VALUES"
