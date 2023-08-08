@@ -13,8 +13,7 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
         break
 
     else
-
-        cmd_arr = cmd_line.split
+        cmd_arr = cmd_line.chop.split
         
         # find main .csv file (FROM, INSERT, UPDATE)
         if cmd_arr.include?("FROM")
@@ -47,7 +46,7 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
                     headers = []
                     n = 1
                     while cmd_arr[index + n].end_with?(",")
-                        headers << cmd_arr[index + n]
+                        headers << cmd_arr[index + n].chop
                         n += 1
                     end
                     headers << cmd_arr[index + n]
