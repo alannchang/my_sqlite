@@ -14,34 +14,43 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
 
     else
         cmd_arr = cmd_line.chop.split
-        
+
         # find main .csv file (FROM, INSERT, UPDATE)
         if cmd_arr.include?("FROM")
             i_from = cmd_arr.index("FROM")
             query = MySqliteCli.new.from(cmd_arr[i_from + 1])
-            cmd_arr.delete_at(i_from) # "FROM"
             cmd_arr.delete_at(i_from + 1) # csv file
+            cmd_arr.delete_at(i_from) # "FROM"
+            
         elsif cmd_arr.include?("INSERT")
             i_insert = cmd_arr.index("INSERT")
             query = MySqliteCli.new.insert(cmd_arr[i_insert + 2])
-            cmd_arr.delete_at(i_insert) # "INSERT"
-            cmd_arr.delete_at(i_insert + 1) # "INTO"
             cmd_arr.delete_at(i_insert + 2) # csv file
+            cmd_arr.delete_at(i_insert + 1) # "INTO"
+            cmd_arr.delete_at(i_insert) # "INSERT"
+
         elsif cmd_arr.include?("UPDATE")
             i_update = cmd_arr.index("UPDATE")
             query = MySqliteCli.new.update(cmd_arr[i_update + 1])
-            cmd_arr.delete_at(i_update) # "UPDATE"
             cmd_arr.delete_at(i_update + 1) # csv file
+            cmd_arr.delete_at(i_update) # "UPDATE"
+
         end
+
+        # cmd_arr.each { |element| puts element }
 
         # everything else (SELECT, WHERE, JOIN, ORDER, VALUES, SET, DELETE)
         cmd_arr.each_with_index do |element, index|
             case element
+
             when "DELETE"
                 query = query.delete
+            
             when "SELECT"
+                
                 if cmd_arr[index + 1] == "*"
                     query = query.select("*")
+                    
                 else
                     headers = []
                     n = 1
@@ -50,9 +59,12 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
                         n += 1
                     end
                     headers << cmd_arr[index + n]
+                    
                     query = query.select(headers)
                 end
+            
             when "WHERE"
+                
                 column_name = cmd_arr[index + 1]
                 criteria = cmd_arr[index + 3][1..-2]
                 query = query.where(column_name, criteria)
