@@ -86,7 +86,13 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
                 query = query.join(column_a, db2, column_b)
 
             when "ORDER"
-                
+                column = cmd_arr[index + 2]
+                if cmd_arr[index + 3] == 'ASC'
+                    query = query.order(:asc, column)
+                else
+                    query = query.order(:desc, column)
+                end
+
             when "VALUES"
 
             when "SET"
