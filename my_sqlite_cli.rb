@@ -4,6 +4,7 @@ require "readline"
 COMMANDS = ["SELECT", "FROM", "WHERE", "JOIN", "ON", "ORDER", "BY", "INSERT", "INTO", "VALUES", "UPDATE", "SET", "DELETE"]
 
 class MySqliteCli < MySqliteRequest
+    attr_reader :full_headers
 end
 
 
@@ -94,6 +95,16 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
                 end
 
             when "VALUES"
+                if cmd_arr[index + 1][0] == "("
+                    values = [cmd_arr[index + 1][1..-2]] # first string minus parenthesis and comma
+                    n = 1
+                    while cmd_arr[index + n][-1] != ")"
+                        n += 1
+                        values << cmd_arr[index + n][0..-2]
+                    end
+                    args = query.full_headers.zip(values).to_h
+                    query = query.values(args)
+                end
 
             when "SET"
                 data = {}
@@ -128,7 +139,7 @@ end
 # SELECT * FROM small_test.csv ORDER BY Age ASC;
 # SELECT * FROM nba_players.csv ORDER BY born DESC;
 
-# INSERT INTO small_test.csv VALUES Gender = 'Male', FirstName = 'John', LastName = 'Smith', UserName = 'john', Email = 'john.smith.aol.com', Age = '90', City = 'San_Andreas', Device = 'Chrome_Android', Coffee_Quantity = '1', Order_At = '1990-10-25_5:23:51';
+# INSERT INTO small_test.csv VALUES (Male, John, Smith, john, john.smith.aol.com, 90, San_Andreas, Chrome_Android, 1, 1990-10-25_5:23:51);
 
 # UPDATE small_test.csv SET Coffee_Quantity = '99' WHERE Gender = "Male";
 
