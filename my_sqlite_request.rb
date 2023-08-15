@@ -238,51 +238,53 @@ end
 
 # TESTS START HERE
 
-# "FROM/SELECT"
+# "FROM/SELECT" functions
+
 # SELECT - SINGLE ARGUMENT AS A STRING
-# MySqliteRequest.new.select('*').from('small_test.csv').run
-# MySqliteRequest.new.select('FirstName').from('small_test.csv').run
+# MySqliteRequest.new.select('Player').from('nba_players.csv').run
 
-# # SELECT - MULTIPLE ARGUMENTS AS AN ARRAY
-# MySqliteRequest.new.select(['Gender', 'Email', 'UserName', 'Device']).from('small_test.csv').run
+# SELECT - MULTIPLE ARGUMENTS AS AN ARRAY
+# MySqliteRequest.new.select(['Player', 'height', 'weight', 'born']).from('nba_players.csv').run
 
 
-# "WHERE"
+# "WHERE" function
+
 # SINGLE WHERE
-# MySqliteRequest.new.select('*').from('small_test.csv').where('Gender', 'Female').run
+# MySqliteRequest.new.select('*').from('nba_players.csv').where('birth_state', 'California').run
 
 # MULTIPLE WHERES
-# MySqliteRequest.new.select(['Gender', 'LastName', 'UserName', 'Age']).from('small_test.csv').where('Gender', 'Male').where('Device', 'Chrome Android').run
+# MySqliteRequest.new.select(['Player', 'collage', 'born', 'birth_city']).from('nba_players.csv').where('birth_state', 'New York').where('birth_city', 'Brooklyn').run
 
 
-# "JOIN"
-# MySqliteRequest.new.select(['Player', 'height', 'position']).from('nba_players.csv').join('Player', 'nba_player_data.csv', 'name').run
+# "JOIN" function
 
+# MySqliteRequest.new.select("*").from('nba_players.csv').join('Player', 'nba_player_data.csv', 'name').run
 
-# "ORDER"
-# ASCENDING
-# MySqliteRequest.new.select('*').from('small_test.csv').order(:asc, 'Age').run
+# "ORDER" function
 
-# DESCENDING
+# ASCENDING order
+# MySqliteRequest.new.select('*').from('nba_players.csv').order(:asc, 'born').run
+
+# DESCENDING order
 # MySqliteRequest.new.select('*').from('nba_players.csv').order(:desc, 'born').run
 
 
-# "INSERT/VALUES"
-# request = MySqliteRequest.new.insert('small_test.csv').values({"Gender"=>"Male", "FirstName"=>"John", "LastName"=>"Smith", "UserName"=>"john", "Email"=>"john.smith@aol.com", "Age"=>"90", "City"=>"San Andreas", "Device"=>"Chrome Android", "Coffee_Quantity"=>"1", "Order_At"=>"1990-10-25 5:23:51"}).run
+# "INSERT/VALUES" function
+# request = MySqliteRequest.new.insert('nba_player_data.csv').values({"name"=>"Alan Chang", "year_start"=>"2023", "year_end"=>"2023", "position"=>"C-F", "height"=>"5-9", "weight"=>"150", "birth_date"=>"December 25, 2023", "college"=>"Qwasar Silicon Valley"}).run
 # request = request.select('*').run
 
 
-# "UPDATE/SET"
-request = MySqliteRequest.new.update('small_test.csv').set({"Coffee_Quantity"=>"99", "Age"=>"99"}).where('Gender', 'Male').run
-request = request.select('*').run
-
-# request = MySqliteRequest.new.update('small_test.csv').set({"Age"=>"99"}).run
+# # "UPDATE/SET" function
+# request = MySqliteRequest.new.update('nba_player_data.csv').set({"height"=>"7-0", "weight"=>"200"}).where('position', 'F-C').run
 # request = request.select('*').run
 
 
-# "DELETE"
-# request = MySqliteRequest.new.from('small_test.csv').delete.where('Gender', 'Male').run
+# "DELETE" function
+
+# DELETE using WHERE
+# request = MySqliteRequest.new.from('nba_player_data.csv').delete.where('position', 'F').run
 # request = request.select('*').run
 
-# request = MySqliteRequest.new.from('small_test.csv').delete.run
+# DELETE all data
+# request = MySqliteRequest.new.from('nba_players.csv').delete.run
 # request = request.select('*').run
