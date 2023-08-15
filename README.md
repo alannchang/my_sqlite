@@ -17,62 +17,66 @@ SQL-like commands and performing operations such as querying data, inserting rec
 A new class called MySqliteCli inherits from the MySqliteRequest class and serves as the backbone for the CLI.
 
 ## Installation
-If you have the my_sqlite_cli.rb and my_sqlite_request.rb files, you can execute the command-line interface using the 'ruby my_sqlite_cli' command or . 
+Using the my_sqlite_cli.rb and my_sqlite_request.rb files, you can execute queries in the command line using the 'ruby my_sqlite_cli.rb' command or you can build and execute requests
+in Ruby by appending it to the end of the my_sqlite_request.rb file and then running the 'ruby my_sqlite_request.rb' command.
 Examples are provided in the Usage section below.
 
 ## Usage
-TODO - How does it work?
+Below are some test cases which demonstrate the features of this program.
+
 ruby my_sqlite_request
 
 ```
-"FROM/SELECT"
-# SELECT - SINGLE ARGUMENT AS A STRING
-# MySqliteRequest.new.select('*').from('small_test.csv').run
-# MySqliteRequest.new.select('FirstName').from('small_test.csv').run
+"FROM/SELECT" functions
 
-# # SELECT - MULTIPLE ARGUMENTS AS AN ARRAY
-# MySqliteRequest.new.select(['Gender', 'Email', 'UserName', 'Device']).from('small_test.csv').run
+SELECT - SINGLE ARGUMENT AS A STRING
+MySqliteRequest.new.select('Player').from('nba_players.csv').run
 
-
-# "WHERE"
-# SINGLE WHERE
-# MySqliteRequest.new.select('*').from('small_test.csv').where('Gender', 'Female').run
-
-# MULTIPLE WHERES
-# MySqliteRequest.new.select(['Gender', 'LastName', 'UserName', 'Device']).from('small_test.csv').where('Gender', 'Male').where('Device', 'Chrome_Android').run
+SELECT - MULTIPLE ARGUMENTS AS AN ARRAY
+MySqliteRequest.new.select(['Player', 'height', 'weight', 'born']).from('nba_players.csv').run
 
 
-# "JOIN"
-# MySqliteRequest.new.select(['Player', 'height', 'position', 'college']).from('nba_players.csv').join('Player', 'nba_player_data.csv', 'name').run
-# MySqliteRequest.new.select("*").from('nba_players.csv').join('Player', 'nba_player_data.csv', 'name').run
+"WHERE" function
 
-# "ORDER"
-# ASCENDING
-# MySqliteRequest.new.select('*').from('small_test.csv').order(:asc, 'Age').run
+SINGLE WHERE
+MySqliteRequest.new.select('*').from('nba_players.csv').where('birth_state', 'California').run
 
-# DESCENDING
-# MySqliteRequest.new.select('*').from('nba_players.csv').order(:desc, 'born').run
+MULTIPLE WHERES
+MySqliteRequest.new.select(['Gender', 'LastName', 'UserName', 'Device']).from('nba_players.csv').where('Gender', 'Male').where('Device', 'Chrome_Android').run
 
 
-# "INSERT/VALUES"
-# request = MySqliteRequest.new.insert('small_test.csv').values({"Gender"=>"Male", "FirstName"=>"John", "LastName"=>"Smith", "UserName"=>"john", "Email"=>"john.smith@aol.com", "Age"=>"90", "City"=>"San_Andreas", "Device"=>"Chrome_Android", "Coffee_Quantity"=>"1", "Order_At"=>"1990-10-25_5:23:51"}).run
-# request = request.select('*').run
+"JOIN" function
+
+MySqliteRequest.new.select("*").from('nba_players.csv').join('Player', 'nba_player_data.csv', 'name').run
+
+"ORDER" function
+
+ASCENDING order
+MySqliteRequest.new.select('*').from('small_test.csv').order(:asc, 'Age').run
+
+DESCENDING order
+MySqliteRequest.new.select('*').from('nba_players.csv').order(:desc, 'born').run
 
 
-# "UPDATE/SET"
-# request = MySqliteRequest.new.update('small_test.csv').set({"Coffee_Quantity"=>"99", "Age"=>"99"}).where('Gender', 'Male').run
-# request = request.select('*').run
-
-# request = MySqliteRequest.new.update('small_test.csv').set({"Age"=>"99"}).run
-# request = request.select('*').run
+"INSERT/VALUES" function
+request = MySqliteRequest.new.insert('small_test.csv').values({"Gender"=>"Male", "FirstName"=>"John", "LastName"=>"Smith", "UserName"=>"john", "Email"=>"john.smith@aol.com", "Age"=>"90", "City"=>"San_Andreas", "Device"=>"Chrome_Android", "Coffee_Quantity"=>"1", "Order_At"=>"1990-10-25_5:23:51"}).run
+request = request.select('*').run
 
 
-# "DELETE"
-# request = MySqliteRequest.new.from('small_test.csv').delete.where('Gender', 'Male').run
-# request = request.select('*').run
+"UPDATE/SET" function
+request = MySqliteRequest.new.update('small_test.csv').set({"Coffee_Quantity"=>"99", "Age"=>"99"}).where('Gender', 'Male').run
+request = request.select('*').run
 
-# request = MySqliteRequest.new.from('small_test.csv').delete.run
-# request = request.select('*').run
+
+"DELETE" function
+
+DELETE using WHERE
+request = MySqliteRequest.new.from('small_test.csv').delete.where('Gender', 'Male').run
+request = request.select('*').run
+
+DELETE all data
+request = MySqliteRequest.new.from('small_test.csv').delete.run
+request = request.select('*').run
 ```
 
 ### The Core Team
