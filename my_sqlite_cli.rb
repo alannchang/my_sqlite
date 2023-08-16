@@ -4,11 +4,13 @@ require "readline"
 COMMANDS = ["SELECT", "FROM", "WHERE", "JOIN", "ON", "ORDER", "BY", "INSERT", "INTO", "VALUES", "UPDATE", "SET", "DELETE"]
 
 class MySqliteCli < MySqliteRequest
-    attr_reader :full_headers
+    attr_reader :full_headers # need list of headers to construct hash for VALUES argument in this CLI
 end
 
 
 query = nil
+
+puts 'MySQLite version 0.1 20XX-XX-XX'
 
 while cmd_line = Readline.readline("my_sqlite_cli>", true)
     
@@ -120,23 +122,22 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
             print selected_values.join("|") + "\n"
         end
             
-
     end
 
 end
 
 # TEST CASES HERE
 
-# SELECT * FROM small_test.csv;
-# SELECT FirstName FROM small_test.csv;
-# SELECT Gender, Email, UserName, Device FROM small_test.csv;
+# SELECT Player FROM nba_players.csv;
+# SELECT * FROM nba_players.csv;
+# SELECT Player, height, weight, born FROM nba_players.csv;
 
-# SELECT * FROM small_test.csv WHERE FirstName = 'Carl';
-# SELECT Gender, LastName, UserName, Age FROM small_test.csv WHERE Device = 'Chrome_Android';
+# SELECT * FROM nba_players.csv WHERE birth_state = 'California';
+# SELECT Player, collage, born, birth_city FROM nba_players.csv WHERE birth_state = 'California';
 
 # SELECT Player, height, position FROM nba_players.csv JOIN nba_player_data.csv ON Player = name;
 
-# SELECT * FROM small_test.csv ORDER BY Age ASC;
+# SELECT * FROM nba_players.csv ORDER BY Player ASC;
 # SELECT * FROM nba_players.csv ORDER BY born DESC;
 
 # INSERT INTO small_test.csv VALUES (Male, John, Smith, john, john.smith.aol.com, 90, San_Andreas, Chrome_Android, 1, 1990-10-25_5:23:51);

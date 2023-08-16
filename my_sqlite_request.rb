@@ -263,7 +263,7 @@ end
 # "ORDER" function
 
 # ASCENDING order
-# MySqliteRequest.new.select('*').from('nba_players.csv').order(:asc, 'born').run
+# MySqliteRequest.new.select('*').from('nba_players.csv').order(:asc, 'Player').run
 
 # DESCENDING order
 # MySqliteRequest.new.select('*').from('nba_players.csv').order(:desc, 'born').run
