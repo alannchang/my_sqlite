@@ -19,16 +19,23 @@ A new class called MySqliteCli inherits from the MySqliteRequest class and serve
 ## Installation
 Using the my_sqlite_cli.rb and my_sqlite_request.rb files, you can execute queries in the command line using the 'ruby my_sqlite_cli.rb' command or you can build and execute requests
 in Ruby by appending it to the end of the my_sqlite_request.rb file and then running the 'ruby my_sqlite_request.rb' command.
-Examples are provided in the Usage section below.
 
 ## Usage
-Below are some test cases which demonstrate the features of this program.
+Test cases are provided at the end of each file as comments.
 
-ruby my_sqlite_request
+my_sqlite_request:
+Test cases can be run by "uncommenting" the test case at the end of the file and running the "ruby my_sqlite_request" command in the terminal. 
 
+my_sqlite_cli:
+A set of example test cases can be located at the end of the my_sqlite_cli.rb file and can be copy/pasted into the terminal.
+Test cases can be run directly in the terminal like so:
 ```
+ruby my_sqlite_cli.rb
 
+SELECT * FROM nba_players.csv;
 ```
+SQLite queries must end with a semi-colon.
+To exit the CLI, the 'quit' command will close the program. 
 
 ### The Core Team
 
