@@ -212,6 +212,7 @@ class MySqliteRequest
 
         which_table = nil
 
+        # select which table to use based on user input (what methods were selected)
         if @sorted_table
             which_table = @sorted_table
         elsif @combined_table
@@ -240,9 +241,11 @@ class MySqliteRequest
 
             if !@where_hash.empty? # if WHERE specified, we only SELECT or print rows that have column values that match WHERE parameters
                 if @where_hash.all? { |key, value| row[key] == value }
-                    if block_given?
+                    
+                    # Depending on file/class, format of output will differ 
+                    if block_given? # SQLite format for my_sqlite_cli.rb
                         yield(row, @select_headers)
-                    else
+                    else # hash format for my_sqlite_request.rb
                         puts row.to_h.slice(*@select_headers) # only 'select' columns/headers get printed
                     end
                 end
@@ -250,9 +253,9 @@ class MySqliteRequest
             # SELECT (WHERE absent)
 
             else # no WHERE means we print all columns
-                if block_given?
+                if block_given? # SQLite format for my_sqlite_cli.rb
                     yield(row, @select_headers)
-                else
+                else # hash format for my_sqlite_request.rb
                     puts row.to_h.slice(*@select_headers) # only 'select' columns/headers get printed
                 end
             end
