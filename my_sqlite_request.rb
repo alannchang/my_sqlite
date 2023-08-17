@@ -14,7 +14,7 @@ class MySqliteRequest
     def from(csv_name)
 
     # parses csv file, converts it to a CSV::Table object and stores the headers 
-
+        @csv_filename = csv_name
         @full_table = CSV.parse(File.read(csv_name), headers: true) 
         @full_headers = @full_table.headers
         self
@@ -85,6 +85,7 @@ class MySqliteRequest
     # a boolean is used to indicate we're inserting and csv file is converted to CSV::Table object
 
         @insert_csv = true
+        @csv_filename = table_name
         @full_table = CSV.parse(File.read(table_name), headers: true)
         @full_headers = @full_table.headers
         self
@@ -105,6 +106,7 @@ class MySqliteRequest
     # boolean is used to indicate we're updating and csv file is converted to CSV::Table object
 
         @update_rows = true
+        @csv_filename = table_name
         @full_table = CSV.parse(File.read(table_name), headers: true)
         @full_headers = @full_table.headers
         self
@@ -134,7 +136,16 @@ class MySqliteRequest
         # INSERT/VALUES
 
         if @insert_csv
+            @new_row = CSV::Row.new(@new_row.keys, @new_row.values)
             @full_table << @new_row
+            CSV.open(@csv_filename, 'w') do |csv|
+                csv << @full_headers
+
+                @full_table.each do |row|
+                    csv << row
+                end
+            end 
+
             @insert_csv = nil # reset after insertion complete
             return self
         end
@@ -270,8 +281,7 @@ end
 
 
 # "INSERT/VALUES" function
-# request = MySqliteRequest.new.insert('nba_player_data.csv').values({"name"=>"Alan Chang", "year_start"=>"2023", "year_end"=>"2023", "position"=>"C-F", "height"=>"5-9", "weight"=>"150", "birth_date"=>"December 25, 2023", "college"=>"Qwasar Silicon Valley"}).run
-# request = request.select('*').run
+request = MySqliteRequest.new.insert('nba_player_data.csv').values({"name"=>"Alan Chang", "year_start"=>"2023", "year_end"=>"2023", "position"=>"C-F", "height"=>"5-9", "weight"=>"150", "birth_date"=>"December 25, 2023", "college"=>"Qwasar Silicon Valley"}).run
 
 
 # # "UPDATE/SET" function
