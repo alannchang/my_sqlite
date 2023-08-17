@@ -160,6 +160,14 @@ class MySqliteRequest
             else # if no WHERE, delete all data/rows
                 @full_table.delete_if { |row| row}
             end
+            CSV.open(@csv_filename, 'w') do |csv|
+                csv << @full_headers
+
+                @full_table.each do |row|
+                    csv << row
+                end
+            end 
+
             @delete_rows = nil # reset after deletion complete
             return self
         end
@@ -281,10 +289,9 @@ end
 
 
 # "INSERT/VALUES" function
-request = MySqliteRequest.new.insert('nba_player_data.csv').values({"name"=>"Alan Chang", "year_start"=>"2023", "year_end"=>"2023", "position"=>"C-F", "height"=>"5-9", "weight"=>"150", "birth_date"=>"December 25, 2023", "college"=>"Qwasar Silicon Valley"}).run
+# request = MySqliteRequest.new.insert('nba_player_data.csv').values({"name"=>"Alan Chang", "year_start"=>"2023", "year_end"=>"2023", "position"=>"C-F", "height"=>"5-9", "weight"=>"150", "birth_date"=>"December 25, 2023", "college"=>"Qwasar Silicon Valley"}).run
 
-
-# # "UPDATE/SET" function
+# "UPDATE/SET" function
 # request = MySqliteRequest.new.update('nba_player_data.csv').set({"height"=>"7-0", "weight"=>"200"}).where('position', 'F-C').run
 # request = request.select('*').run
 
