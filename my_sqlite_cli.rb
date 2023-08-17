@@ -1,16 +1,12 @@
 require './my_sqlite_request.rb'
 require "readline"
 
-COMMANDS = ["SELECT", "FROM", "WHERE", "JOIN", "ON", "ORDER", "BY", "INSERT", "INTO", "VALUES", "UPDATE", "SET", "DELETE"]
-
 class MySqliteCli < MySqliteRequest
     attr_reader :full_headers # need list of headers to construct hash for VALUES argument in this CLI
 end
 
-
-query = nil
-
 puts 'MySQLite version 0.1 20XX-XX-XX'
+
 
 while cmd_line = Readline.readline("my_sqlite_cli>", true)
     
@@ -18,37 +14,25 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
         break
 
     else
-        cmd_arr = cmd_line.chop.split
+        cmd_arr = cmd_line.chop.split # remove the semi-colon and then put everything into an array
 
         # find main .csv file (FROM, INSERT, UPDATE)
         if cmd_arr.include?("FROM")
             i_from = cmd_arr.index("FROM")
-            if query == nil
-                query = MySqliteCli.new.from(cmd_arr[i_from + 1])
-            else 
-                query = query.from(cmd_arr[i_from + 1])
-            end
+            query = MySqliteCli.new.from(cmd_arr[i_from + 1])
             cmd_arr.delete_at(i_from + 1) # csv file
             cmd_arr.delete_at(i_from) # "FROM"
             
         elsif cmd_arr.include?("INSERT")
             i_insert = cmd_arr.index("INSERT")
-            if query == nil
-                query = MySqliteCli.new.insert(cmd_arr[i_insert + 2])
-            else
-                query = query.insert(cmd_arr[i_insert + 2])
-            end
+            query = MySqliteCli.new.insert(cmd_arr[i_insert + 2])
             cmd_arr.delete_at(i_insert + 2) # csv file
             cmd_arr.delete_at(i_insert + 1) # "INTO"
             cmd_arr.delete_at(i_insert) # "INSERT"
 
         elsif cmd_arr.include?("UPDATE")
             i_update = cmd_arr.index("UPDATE")
-            if query == nil
-                query = MySqliteCli.new.update(cmd_arr[i_update + 1])
-            else
-                query = query.update(cmd_arr[i_update + 1])
-            end
+            query = MySqliteCli.new.update(cmd_arr[i_update + 1])
             cmd_arr.delete_at(i_update + 1) # csv file
             cmd_arr.delete_at(i_update) # "UPDATE"
 
@@ -56,6 +40,7 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
 
         # everything else (SELECT, WHERE, JOIN, ORDER, VALUES, SET, DELETE)
         cmd_arr.each_with_index do |element, index|
+            
             case element
 
             when "DELETE"
@@ -79,6 +64,7 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
                 end
             
             when "WHERE"
+
                 n = 1
                 while cmd_arr[index + n + 3] == 'AND' 
                     column_name = cmd_arr[index + n]
@@ -91,12 +77,14 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
                 query = query.where(column_name, criteria)
                 
             when "JOIN"
+
                 db2 = cmd_arr[index + 1]
                 column_a = cmd_arr[index + 3]
                 column_b = cmd_arr[index + 5]
                 query = query.join(column_a, db2, column_b)
 
             when "ORDER"
+
                 column = cmd_arr[index + 2]
                 if cmd_arr[index + 3] == 'ASC'
                     query = query.order(:asc, column)
@@ -105,8 +93,9 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
                 end
 
             when "VALUES"
+
                 if cmd_arr[index + 1][0] == "("
-                    values = [cmd_arr[index + 1][1..-2]] # first string minus parenthesis and comma
+                    values = [cmd_arr[index + 1][1..-2]]
                     n = 1
                     while cmd_arr[index + n][-1] != ")"
                         n += 1
@@ -117,22 +106,32 @@ while cmd_line = Readline.readline("my_sqlite_cli>", true)
                 end
 
             when "SET"
+
                 data = {}
-                column = cmd_arr[index + 1]
-                value = cmd_arr[index + 3][1..-2]
+                n = 0
+                while cmd_arr[index + n + 3][-1] == ','
+                    column = cmd_arr[index + n + 1]
+                    value = cmd_arr[index + n + 3][1..-3]
+                    data[column] = value
+                    n += 3
+                end
+                column = cmd_arr[index + n + 1]
+                value = cmd_arr[index + n + 3][1..-2]
                 data[column] = value
                 query = query.set(data)
             end
         end
 
+        # after all commands added to query, "run" is executed
         query = query.run do |row, select_headers|
+            
+            # if 'select' is in the query, the output is changed to resemble the SQLite output format
             selected_values = select_headers.map { |header| row[header] }
             print selected_values.join("|") + "\n"
-        end
-            
+        end     
     end
-
 end
+
 
 # TEST CASES HERE
 

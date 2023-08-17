@@ -27,7 +27,7 @@ my_sqlite_request:
 Test cases can be run by "uncommenting" the test case at the end of the file and running the "ruby my_sqlite_request" command in the terminal. 
 
 my_sqlite_cli:
-A set of example test cases can be located at the end of the my_sqlite_cli.rb file and can be copy/pasted into the terminal.
+A set of example test cases can be located at the end of the my_sqlite_cli.rb file and can be copy/pasted into the terminal after booting the program.
 Test cases can be run directly in the terminal like so:
 ```
 ruby my_sqlite_cli.rb
@@ -38,7 +38,7 @@ SQLite queries must end with a semi-colon.
 To exit the CLI, the 'quit' command will close the program. 
 
 ### The Core Team
-
+Alan Chang
 
 <span><i>Made at <a href='https://qwasar.io'>Qwasar SV -- Software Engineering School</a></i></span>
 <span><img alt='Qwasar SV -- Software Engineering School's Logo' src='https://storage.googleapis.com/qwasar-public/qwasar-logo_50x50.png' width='20px'></span>
