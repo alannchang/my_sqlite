@@ -138,6 +138,8 @@ class MySqliteRequest
         if @insert_csv
             @new_row = CSV::Row.new(@new_row.keys, @new_row.values)
             @full_table << @new_row
+
+            # record changes to .csv file by overwriting
             CSV.open(@csv_filename, 'w') do |csv|
                 csv << @full_headers
 
@@ -160,6 +162,8 @@ class MySqliteRequest
             else # if no WHERE, delete all data/rows
                 @full_table.delete_if { |row| row}
             end
+
+            # record changes to .csv file by overwriting
             CSV.open(@csv_filename, 'w') do |csv|
                 csv << @full_headers
 
@@ -189,6 +193,16 @@ class MySqliteRequest
                     end
                 end
             end
+
+            # record changes to .csv file by overwriting
+            CSV.open(@csv_filename, 'w') do |csv|
+                csv << @full_headers
+
+                @full_table.each do |row|
+                    csv << row
+                end
+            end
+
             @where_hash = {} # reset WHERE after complete
             @update_rows = nil # reset after updating complete
             return self
@@ -290,9 +304,11 @@ end
 
 # "INSERT/VALUES" function
 # request = MySqliteRequest.new.insert('nba_player_data.csv').values({"name"=>"Alan Chang", "year_start"=>"2023", "year_end"=>"2023", "position"=>"C-F", "height"=>"5-9", "weight"=>"150", "birth_date"=>"December 25, 2023", "college"=>"Qwasar Silicon Valley"}).run
+# request = request.select('*').run
+
 
 # "UPDATE/SET" function
-# request = MySqliteRequest.new.update('nba_player_data.csv').set({"height"=>"7-0", "weight"=>"200"}).where('position', 'F-C').run
+# request = MySqliteRequest.new.update('nba_player_data.csv').set({"height"=>"7-0", "weight"=>"200", "name"=>"Mister Sqlite"}).where('position', 'F-C').run
 # request = request.select('*').run
 
 
